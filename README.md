@@ -2,9 +2,9 @@
 Hackmatch is a simple cheat I made for Redmatch 2 to learn IL2CPP and because of lack of good cheats for RM2 at that time. It is using the IL2CPP dumper's SDK + 
 renamed variables names from an older RM2 version
 
-<div style="text-align:center">
-    <img src="./images/logo.png" alt="Hackmatch Logo">
-</div>
+<p align="center">
+  <img src="./images/logo.png" alt="Hackmatch Logo">
+</p>
 
 ## 🚀 Features
 ### 🎯 Main:
