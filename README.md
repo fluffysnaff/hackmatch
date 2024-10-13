@@ -52,3 +52,7 @@ Hackmatch is a C++ project designed to work on Windows using Visual Studio.
 ### 👏 Credits
 - Perfare - [Il2CppDumper](https://github.com/Perfare/Il2CppDumper)
 - cheatdeveloper73 - [Valuable variable names and ideas for the features](https://github.com/cheatdeveloper73/redmatch-cheat)
+
+## Star History
+
+[![Star History Chart](https://api.star-history.com/svg?repos=fluffysnaff/hackmatch&type=Date)](https://star-history.com/#fluffysnaff/hackmatch&Date)
