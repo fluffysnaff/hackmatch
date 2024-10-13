@@ -1,11 +1,13 @@
-# Hackmatch
+# 🔥 Hackmatch
 Hackmatch is a simple cheat I made for Redmatch 2 to learn IL2CPP and because of lack of good cheats for RM2 at that time. It is using the IL2CPP dumper's SDK + 
 renamed variables names from an older RM2 version
 
-![Hackmatch Logo](./images/logo.png)
+<div style="text-align:center">
+    <img src="./images/logo.png" alt="Hackmatch Logo">
+</div>
 
-## Features
-### Main:
+## 🚀 Features
+### 🎯 Main:
 - **Anti shield**: Bypass shield mechanics.
 - **No cam shake**: Disable camera shake effects.
 - **No spread**: Eliminate weapon bullet spread.
@@ -15,19 +17,19 @@ renamed variables names from an older RM2 version
 - **Fly hack**: Enable flying capabilities.
 - **Fast melee**: Speed up melee attacks.
 
-### ESP:
+### 👁️ ESP:
 - **Box ESP**: Visual boxes around targets.
 - **Nameplates**: Display player names.
 
 ![Hackmatch Menu](./images/hackmatch_menu.png)
 
-## Contributions
+## 🤝 Contributions
 Contributions are welcome! This project is no longer actively maintained and community contributions are required to keep it alive. Feel free to submit a pull request wether it's cleaning up the code, fixing bugs, updating the SDK or adding new features.
 
-## How to Use
+## 🛠️ How to Use
 Hackmatch is a C++ project designed to work on Windows using Visual Studio.
 
-### Build Instructions
+### ⚙️ Build Instructions
 1. **Clone the Repository**:
    Open your terminal or Git Bash, and clone the repository:
    ```bash
@@ -38,7 +40,7 @@ Hackmatch is a C++ project designed to work on Windows using Visual Studio.
     - Open the .sln file located in the cloned repository
     - Build with x64-Release
     
-### Updating instructions
+### 🔄 Updating instructions
 1. Use IL2CPPDumper to get the `il2cpp.h` file
 2. Backup the old `il2cpp.h` file located at `./il2cpp/il2cpp.h`
 3. Add the new dumped .h file
@@ -47,6 +49,6 @@ Hackmatch is a C++ project designed to work on Windows using Visual Studio.
 6. Rename needed variables(for example `float _____11;` to `float bulletSpread;`)
 7. Done
 
-### Credits
+### 👏 Credits
 - Perfare - [Il2CppDumper](https://github.com/Perfare/Il2CppDumper)
 - cheatdeveloper73 - [Valuable variable names and ideas for the features](https://github.com/cheatdeveloper73/redmatch-cheat)
