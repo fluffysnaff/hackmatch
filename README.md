@@ -1,10 +1,26 @@
 # 🔥 Hackmatch
-Hackmatch is a simple cheat I made for Redmatch 2 to learn IL2CPP and because of lack of good cheats for RM2 at that time. It is using the IL2CPP dumper's SDK + 
-renamed variables names from an older RM2 version
 
 <p align="center">
   <img src="./images/logo.png" alt="Hackmatch Logo">
 </p>
+
+Hackmatch is a simple cheat I made for Redmatch 2 to learn IL2CPP and because of lack of good cheats for RM2 at that time. It is using the IL2CPP dumper's SDK + 
+renamed variables names from an older RM2 version
+
+<div align="center">
+  <!-- Project Status Badges -->
+  <a href="https://github.com/fluffysnaff/hackmatch/releases"><img src="https://img.shields.io/github/v/release/fluffysnaff/hackmatch?style=for-the-badge&color=blue&label=Latest%20Release" alt="release"></a>
+  <img src="https://img.shields.io/badge/Status-Seeking%20Maintainer-red?style=for-the-badge" alt="Seeking Maintainer">
+  <a href="https://github.com/fluffysnaff/hackmatch/pulls"><img src="https://img.shields.io/badge/PRs-welcome-brightgreen.svg?style=for-the-badge" alt="PRs Welcome"></a>
+  <!-- Tech & Fun Badges -->
+  <br/>
+  <img src="https://img.shields.io/badge/C++-00599C?style=flat-square&logo=c%2B%2B&logoColor=white" alt="C++">
+  <img src="https://img.shields.io/badge/Platform-Windows-0078D6?style=flat-square&logo=windows" alt="Platform">
+  <img src="https://img.shields.io/badge/For-Redmatch%202-E94560?style=flat-square" alt="For Redmatch 2">
+  <img src="https://img.shields.io/badge/Risk%20of%20Ban-High-yellow?style=flat-square" alt="Risk of Ban: High">
+</div>
+
+---
 
 ## 🚀 Features
 ### 🎯 Main:
