@@ -23,6 +23,11 @@ constexpr float speed(float value)
     return std::clamp(value, 5.0f, 80.0f);
 }
 
+constexpr float reload_time(float value)
+{
+    return std::clamp(value, 0.0f, 2.0f);
+}
+
 constexpr float unit(float value)
 {
     return std::clamp(value, 0.0f, 1.0f);

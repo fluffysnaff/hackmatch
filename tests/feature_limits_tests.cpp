@@ -16,6 +16,8 @@ int main()
     assert(gravity(75.0f) == 50.0f);
     assert(speed(1.0f) == 5.0f);
     assert(speed(120.0f) == 80.0f);
+    assert(reload_time(-1.0f) == 0.0f);
+    assert(reload_time(3.0f) == 2.0f);
     assert(unit(-1.0f) == 0.0f);
     assert(unit(2.0f) == 1.0f);
     assert(esp_thickness(0.1f) == 0.5f);

@@ -21,10 +21,9 @@ public:
     void zero_player_spread(il2cpp::Object* local);
     void zero_spread(const GameplayItem& item);
     void infinite_ammo(const GameplayItem& item);
-    void instant_reload(const GameplayItem& item);
+    void instant_reload(const GameplayItem& item, float reload_time);
     void zero_camera_shake(const GameplayItem& item);
     void rapid_fire(const GameplayItem& item);
-    void custom_damage(const GameplayItem& item);
 
 private:
     struct Ammo {
@@ -53,7 +52,6 @@ private:
         float movement_spread_multiplier = 0.0f;
         float ads_movement_spread_multiplier = 0.0f;
         float camera_ads_bob_multiplier = 0.0f;
-        int damage_lobby_data = 0;
         ShotOriginal primary_original{};
         ShotOriginal secondary_original{};
     };
@@ -100,7 +98,6 @@ private:
     il2cpp::FieldInfo* info_ads_movement_spread_multiplier_ = nullptr;
     il2cpp::FieldInfo* info_camera_ads_bob_multiplier_ = nullptr;
     il2cpp::FieldInfo* info_damage_data_ = nullptr;
-    il2cpp::FieldInfo* info_damage_lobby_data_ = nullptr;
     il2cpp::FieldInfo* shot_bullet_spread_ = nullptr;
     il2cpp::FieldInfo* shot_ads_bullet_spread_ = nullptr;
     il2cpp::FieldInfo* shot_camera_shake_ = nullptr;

@@ -22,6 +22,11 @@ struct AimTarget {
     bool found = false;
 };
 
+struct TargetProbe {
+    bool attempted = false;
+    bool detected = false;
+};
+
 struct ManagedString : il2cpp::Object {
     int length;
     wchar_t chars[1];
@@ -80,7 +85,7 @@ bool any_feature_enabled(const AppSettings& config)
     const auto& weapons = config.weapons;
     const auto& movement = config.movement;
     const auto& player = config.player;
-    return weapons.no_spread || weapons.infinite_ammo || weapons.instant_reload || weapons.no_camera_shake || config.aim.enabled || weapons.rapid_fire || weapons.custom_damage || player.custom_fov ||
+    return weapons.no_spread || weapons.infinite_ammo || weapons.instant_reload || weapons.no_camera_shake || config.aim.enabled || weapons.rapid_fire || player.custom_fov ||
         movement.auto_sprint || movement.no_gravity || movement.custom_gravity || movement.high_speed || player.disable_spawn_protection;
 }
 
@@ -126,6 +131,20 @@ bool unity_alive(il2cpp::Object* object)
     il2cpp::Object* exception = nullptr;
     bool is_null = true;
     return boxed_value(il2cpp::runtime_invoke(object_equals, nullptr, args, &exception), is_null) && !exception && !is_null;
+}
+
+bool spawn_protected(il2cpp::Object* player)
+{
+    static il2cpp::FieldInfo* shield_object = il2cpp::field(game().player_controller(), "shieldObject");
+    static MethodInfo* active_in_hierarchy = il2cpp::method("UnityEngine.CoreModule", "UnityEngine", "GameObject", "get_activeInHierarchy", 0);
+    il2cpp::Object* shield = nullptr;
+    if (!player || !shield_object || !active_in_hierarchy || !il2cpp::read_field(player, shield_object, &shield) || !unity_alive(shield)) {
+        return false;
+    }
+
+    il2cpp::Object* exception = nullptr;
+    bool active = false;
+    return boxed_value(il2cpp::runtime_invoke(active_in_hierarchy, shield, nullptr, &exception), active) && !exception && active;
 }
 
 bool position_of(il2cpp::Object* object, Vector3& out)
@@ -261,26 +280,6 @@ bool add_wall_distance(AimHitDistances& hits, float distance)
     return true;
 }
 
-void choose_player_targets(AimTarget& best, const Vector3& camera_position, const Vector3& camera_forward, float min_dot)
-{
-    static il2cpp::FieldInfo* local_instance = il2cpp::field(game().player_controller(), "LocalInstance");
-    il2cpp::Object* local = nullptr;
-    il2cpp::Array* players = il2cpp::objects_of_type(game().player_controller());
-    if (!players || !local_instance || !il2cpp::read_static_field(local_instance, &local)) {
-        return;
-    }
-
-    const int total = static_cast<int>(players->size());
-    for (int i = 0; i < total; ++i) {
-        il2cpp::Object* player = players->at(i);
-        Vector3 position{};
-        if (player == local || !position_of(player, position)) {
-            continue;
-        }
-        choose_target(best, player, camera_position, camera_forward, min_dot, position);
-    }
-}
-
 il2cpp::Object* raycast_hit_collider(RaycastHit& hit)
 {
     static MethodInfo* find_object = il2cpp::method("UnityEngine.CoreModule", "UnityEngine", "Object", "FindObjectFromInstanceID", 1);
@@ -355,7 +354,7 @@ bool walls_before_player(const Vector3& origin, const Vector3& direction, float 
     RaycastHit* data = reinterpret_cast<RaycastHit*>(reinterpret_cast<char*>(hits) + offsetof(il2cpp::Array, vector));
     for (std::uintptr_t i = 0; i < hits->size(); ++i) {
         RaycastHit& hit = data[i];
-        if (hit.distance < 1.5f || hit.distance > max_distance) {
+        if (hit.distance < 0.01f || hit.distance > max_distance) {
             continue;
         }
 
@@ -388,7 +387,7 @@ bool walls_before_player(const Vector3& origin, const Vector3& direction, float 
     return true;
 }
 
-void choose_allowed_target(AimTarget& best, il2cpp::Object* local, il2cpp::Object* player, const Vector3& origin, const Vector3& camera_forward, float min_dot, Vector3 target_position, int max_walls)
+void choose_allowed_target(AimTarget& best, il2cpp::Object* local, il2cpp::Object* player, const Vector3& origin, const Vector3& camera_forward, float min_dot, Vector3 target_position, float max_distance, int max_walls, TargetProbe* probe)
 {
     const float distance = distance_sq(origin, target_position);
     if (distance < 0.0001f) {
@@ -397,6 +396,9 @@ void choose_allowed_target(AimTarget& best, il2cpp::Object* local, il2cpp::Objec
 
     Vector3 direction{target_position.x - origin.x, target_position.y - origin.y, target_position.z - origin.z};
     const float length = std::sqrt(distance);
+    if (length > max_distance) {
+        return;
+    }
     direction.x /= length;
     direction.y /= length;
     direction.z /= length;
@@ -406,14 +408,19 @@ void choose_allowed_target(AimTarget& best, il2cpp::Object* local, il2cpp::Objec
         return;
     }
 
+    if (probe) probe->attempted = true;
     int walls = 0;
-    if (!walls_before_player(origin, direction, length + 2.0f, local, player, walls) || walls > max_walls) {
+    if (!walls_before_player(origin, direction, length + 2.0f, local, player, walls)) {
+        return;
+    }
+    if (probe) probe->detected = true;
+    if (walls > max_walls) {
         return;
     }
     choose_target(best, player, origin, camera_forward, min_dot, target_position);
 }
 
-void choose_shot_targets(AimTarget& best, const Vector3& origin, const Vector3& camera_forward, float min_dot, int max_walls)
+void choose_shot_targets(AimTarget& best, const Vector3& origin, const Vector3& camera_forward, float min_dot, float max_distance, int max_walls, il2cpp::Object* locked_target, TargetProbe* probe)
 {
     static il2cpp::FieldInfo* local_instance = il2cpp::field(game().player_controller(), "LocalInstance");
     il2cpp::Object* local = nullptr;
@@ -423,16 +430,27 @@ void choose_shot_targets(AimTarget& best, const Vector3& origin, const Vector3& 
     }
 
     const int total = static_cast<int>(players->size());
+    bool locked_target_seen = !locked_target;
     for (int i = 0; i < total; ++i) {
         il2cpp::Object* player = players->at(i);
+        if (player == locked_target) locked_target_seen = true;
         Vector3 position{};
-        if (player == local || !position_of(player, position)) {
+        if (player == local || (locked_target && player != locked_target)) {
             continue;
         }
-        choose_allowed_target(best, local, player, origin, camera_forward, min_dot, {position.x, position.y + 1.0f, position.z}, max_walls);
-        choose_allowed_target(best, local, player, origin, camera_forward, min_dot, {position.x, position.y + 1.8f, position.z}, max_walls);
-        choose_allowed_target(best, local, player, origin, camera_forward, min_dot, position, max_walls);
+        if (!position_of(player, position)) {
+            if (probe) probe->attempted = true;
+            continue;
+        }
+        if (settings().aim.ignore_spawn_protected_targets && spawn_protected(player)) {
+            if (probe) probe->attempted = true;
+            continue;
+        }
+        choose_allowed_target(best, local, player, origin, camera_forward, min_dot, {position.x, position.y + 1.0f, position.z}, max_distance, max_walls, probe);
+        choose_allowed_target(best, local, player, origin, camera_forward, min_dot, {position.x, position.y + 1.8f, position.z}, max_distance, max_walls, probe);
+        choose_allowed_target(best, local, player, origin, camera_forward, min_dot, position, max_distance, max_walls, probe);
     }
+    if (!locked_target_seen && probe) probe->attempted = true;
 }
 
 float delta_time()
@@ -910,7 +928,7 @@ void apply_item_features(const WeaponSettings& weapons, GameplayItems& items, co
         items.infinite_ammo(item);
     }
     if (weapons.instant_reload) {
-        items.instant_reload(item);
+        items.instant_reload(item, feature_limits::reload_time(weapons.reload_time));
     }
     if (weapons.no_camera_shake) {
         items.zero_camera_shake(item);
@@ -918,33 +936,44 @@ void apply_item_features(const WeaponSettings& weapons, GameplayItems& items, co
     if (weapons.rapid_fire) {
         items.rapid_fire(item);
     }
-    if (weapons.custom_damage) {
-        items.custom_damage(item);
-    }
 }
 }
 
-bool Gameplay::redirect_shot(Vector3 origin, Vector3& direction, float& target_distance)
+bool Gameplay::redirect_shot(Vector3 origin, Vector3& direction, float max_distance)
 {
     const AimSettings& aim = settings().aim;
     target_player_ = nullptr;
-    if (!aiming() || !il2cpp::ready() || !game().ready() || distance_sq(direction, {}) < 0.0001f) {
+    const bool active = aiming();
+    if (!active || !il2cpp::ready() || !game().ready() || distance_sq(direction, {}) < 0.0001f) {
+        if (!active) {
+            locked_target_.store(nullptr, std::memory_order_release);
+            locked_target_valid_.store(false, std::memory_order_release);
+        }
         return false;
     }
 
+    il2cpp::Object* locked_target = locked_target_.load(std::memory_order_acquire);
+    locked_target_valid_.store(false, std::memory_order_release);
     AimTarget best{};
-    choose_shot_targets(best, origin, direction, aim_min_dot(aim), aim.wallbang ? 2 : 0);
+    TargetProbe probe{};
+    choose_shot_targets(best, origin, direction, aim_min_dot(aim), max_distance, aim.wallbang ? 2 : 0, locked_target, locked_target ? &probe : nullptr);
+    if (locked_target && !best.found && probe.attempted && !probe.detected) {
+        locked_target_.store(nullptr, std::memory_order_release);
+        locked_target = nullptr;
+        choose_shot_targets(best, origin, direction, aim_min_dot(aim), max_distance, aim.wallbang ? 2 : 0, nullptr, nullptr);
+    }
     if (!best.found) {
         return false;
     }
 
+    if (!locked_target) locked_target_.store(best.player, std::memory_order_release);
+    locked_target_valid_.store(true, std::memory_order_release);
     target_player_ = best.player;
     direction = {best.position.x - origin.x, best.position.y - origin.y, best.position.z - origin.z};
     const float length = std::sqrt(distance_sq(direction, {}));
     direction.x /= length;
     direction.y /= length;
     direction.z /= length;
-    target_distance = length;
     return true;
 }
 
@@ -969,23 +998,16 @@ il2cpp::Object* Gameplay::target_player() const
     return target_player_;
 }
 
-void Gameplay::update_target(il2cpp::Object* local)
+void Gameplay::update_target()
 {
     target_player_ = nullptr;
     if (!aiming()) {
+        locked_target_.store(nullptr, std::memory_order_release);
+        locked_target_valid_.store(false, std::memory_order_release);
         return;
     }
-
-    Vector3 camera_position{};
-    Vector3 camera_forward{};
-    if (!camera_aim_state(local, camera_position, camera_forward)) {
-        return;
-    }
-
-    AimTarget best{};
-    choose_player_targets(best, camera_position, camera_forward, aim_min_dot(settings().aim));
-    if (best.found) {
-        target_player_ = best.player;
+    if (il2cpp::Object* locked_target = locked_target_.load(std::memory_order_acquire)) {
+        if (locked_target_valid_.load(std::memory_order_acquire)) target_player_ = locked_target;
     }
 }
 
@@ -995,6 +1017,8 @@ void Gameplay::tick()
     GameplayItems& items = gameplay_items();
     if (!aiming()) {
         target_player_ = nullptr;
+        locked_target_.store(nullptr, std::memory_order_release);
+        locked_target_valid_.store(false, std::memory_order_release);
     }
 
     if (!any_feature_enabled(config)) {
@@ -1006,6 +1030,8 @@ void Gameplay::tick()
         }
         items.restore_all();
         target_player_ = nullptr;
+        locked_target_.store(nullptr, std::memory_order_release);
+        locked_target_valid_.store(false, std::memory_order_release);
         return;
     }
     if (!il2cpp::ready() || !game().ready() || !items.resolve()) {
@@ -1022,16 +1048,21 @@ void Gameplay::tick()
         restore_stat_patches(true);
         restore_physics_gravity();
         target_player_ = nullptr;
+        locked_target_.store(nullptr, std::memory_order_release);
+        locked_target_valid_.store(false, std::memory_order_release);
         return;
     }
 
     items.begin_session(local);
     if (ready_local_.load(std::memory_order_acquire) != local) {
+        target_player_ = nullptr;
+        locked_target_.store(nullptr, std::memory_order_release);
+        locked_target_valid_.store(false, std::memory_order_release);
         return;
     }
 
     apply_player_features(config, items, local);
-    update_target(local);
+    update_target();
 
     il2cpp::Array* local_items = items.local_items(local);
     const int total = local_items ? static_cast<int>(local_items->size()) : 0;
@@ -1046,6 +1077,8 @@ void Gameplay::tick()
 void Gameplay::restore()
 {
     target_player_ = nullptr;
+    locked_target_.store(nullptr, std::memory_order_release);
+    locked_target_valid_.store(false, std::memory_order_release);
     ready_local_.store(nullptr, std::memory_order_release);
     if (il2cpp::ready() && game().ready()) {
         il2cpp::attach_thread();

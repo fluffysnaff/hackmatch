@@ -32,6 +32,7 @@ int main()
     source.controls.esp_toggle_hotkey = 0x76;
     source.aim.enabled = true;
     source.aim.always_on = true;
+    source.aim.ignore_spawn_protected_targets = true;
     source.aim.fov = 73.0f;
     source.esp.enabled = true;
     source.esp.box_style = BoxStyle::Corner;
@@ -46,6 +47,8 @@ int main()
     source.esp.target_marker = true;
     source.esp.maximum_distance = 800.0f;
     source.esp.enemy_color = {true, {0.2f, 0.3f, 0.4f, 0.8f}};
+    source.weapons.instant_reload = true;
+    source.weapons.reload_time = 0.35f;
     source.weapons.rapid_fire = true;
     source.movement.high_speed = true;
     source.movement.speed = 44.0f;
@@ -63,6 +66,9 @@ int main()
     nlohmann::json legacy_json = nlohmann::json::parse(json);
     legacy_json.erase("custom_theme");
     legacy_json.erase("interface");
+    legacy_json["aim"].erase("ignore_spawn_protected_targets");
+    legacy_json["weapons"].erase("reload_time");
+    legacy_json["weapons"]["custom_damage"] = true;
     legacy_json["esp"]["show_ping"] = true;
     legacy_json["player"]["spoof_ping"] = true;
     legacy_json["player"]["spoof_ping_ms"] = 1;
@@ -70,6 +76,8 @@ int main()
     assert(legacy.ok);
     assert(legacy.value.custom_theme == CustomThemeSettings{});
     assert(legacy.value.controls == InterfaceSettings{});
+    assert(!legacy.value.aim.ignore_spawn_protected_targets);
+    assert(legacy.value.weapons.reload_time == 0.0f);
 
     ConfigManager manager(directory);
     AppSettings live;
@@ -114,8 +122,10 @@ int main()
     assert(!ConfigManager::deserialize(std::string(ConfigManager::maximum_document_size + 1, 'x')).ok);
     nlohmann::json out_of_range = nlohmann::json::parse(json);
     out_of_range["aim"]["fov"] = 999.0f;
+    out_of_range["weapons"]["reload_time"] = 999.0f;
     const ConfigValidation clamped = ConfigManager::deserialize(out_of_range.dump());
     assert(clamped.ok && clamped.value.aim.fov == 180.0f);
+    assert(clamped.value.weapons.reload_time == 2.0f);
     nlohmann::json reserved_hotkey = nlohmann::json::parse(json);
     reserved_hotkey["interface"]["menu_hotkey"] = 0x1B;
     assert(!ConfigManager::deserialize(reserved_hotkey.dump()).ok);

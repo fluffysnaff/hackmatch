@@ -5,7 +5,6 @@
 namespace hackmatch {
 namespace {
 constexpr int damage_rifle = 1;
-constexpr int damage_lobby_sniper = 0x21;
 
 template <class T>
 bool read(il2cpp::Object* object, il2cpp::FieldInfo* field, T& value)
@@ -104,7 +103,6 @@ bool GameplayItems::resolve_info_fields(il2cpp::Object* info)
     info_ads_movement_spread_multiplier_ = il2cpp::field(info->klass, "adsMovementSpreadMultiplier");
     info_camera_ads_bob_multiplier_ = il2cpp::field(info->klass, "cameraADSBobMultiplier");
     info_damage_data_ = il2cpp::field(info->klass, "damageData");
-    info_damage_lobby_data_ = il2cpp::field(info->klass, "damageLobbyData");
     return info_use_delay_ && info_primary_shot_;
 }
 
@@ -174,7 +172,6 @@ GameplayItems::InfoOriginal* GameplayItems::original_for(il2cpp::Object* info)
     read(info, info_movement_spread_multiplier_, original.movement_spread_multiplier);
     read(info, info_ads_movement_spread_multiplier_, original.ads_movement_spread_multiplier);
     read(info, info_camera_ads_bob_multiplier_, original.camera_ads_bob_multiplier);
-    read(info, info_damage_lobby_data_, original.damage_lobby_data);
     save_shot(original.primary_original, original.primary);
     save_shot(original.secondary_original, original.secondary);
     return &original;
@@ -196,7 +193,6 @@ void GameplayItems::restore_info(const InfoOriginal& original)
     write(info, info_movement_spread_multiplier_, original.movement_spread_multiplier);
     write(info, info_ads_movement_spread_multiplier_, original.ads_movement_spread_multiplier);
     write(info, info_camera_ads_bob_multiplier_, original.camera_ads_bob_multiplier);
-    write(info, info_damage_lobby_data_, original.damage_lobby_data);
     restore_shot(original.primary_original);
     restore_shot(original.secondary_original);
 }
@@ -278,10 +274,9 @@ void GameplayItems::infinite_ammo(const GameplayItem& item)
     write(item.item, item_total_ammo_, ammo);
 }
 
-void GameplayItems::instant_reload(const GameplayItem& item)
+void GameplayItems::instant_reload(const GameplayItem& item, float reload_time)
 {
-    const float zero = 0.0f;
-    write(item.info, info_reload_time_, zero);
+    write(item.info, info_reload_time_, reload_time);
 }
 
 void GameplayItems::zero_camera_shake(const GameplayItem& item)
@@ -309,11 +304,6 @@ void GameplayItems::rapid_fire(const GameplayItem& item)
     read(item.info, info_damage_data_, damage_data);
     const float delay = damage_data == damage_rifle ? 0.05f : 0.3f;
     write(item.info, info_use_delay_, delay);
-}
-
-void GameplayItems::custom_damage(const GameplayItem& item)
-{
-    write(item.info, info_damage_lobby_data_, damage_lobby_sniper);
 }
 
 GameplayItems& gameplay_items()

@@ -14,6 +14,10 @@ Candidates come from live player controllers and exclude the local player. Team 
 
 The largest dot product is the target closest to the view axis. The configured field of view is converted into a minimum dot product, allowing the hot path to compare a scalar rather than project every candidate to screen space. “Ignore field of view” removes that lower bound but retains the same best-angle scoring.
 
+The first player selected while aim is active remains locked until the activation key is released. If that player leaves the field of view or becomes obstructed, redirection pauses instead of switching to another player. A locked player with no remaining hittable collider is treated as unavailable and selection retries, allowing a new target after death. The ESP target marker reflects this shot-validated state rather than running a separate angle-only selection.
+
+The optional spawn-protection filter skips players while their `shieldObject` is active. Existing profiles default this filter off.
+
 ## Hit scanning and wall counting
 
 Shot selection checks several useful points on a player rather than relying on a single transform origin. Each candidate point is scanned with the game's `Physics.RaycastAll` metadata binding. Hits are classified as the target player, the local player, or intervening geometry.

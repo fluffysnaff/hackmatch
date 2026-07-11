@@ -233,7 +233,8 @@ std::string ConfigManager::serialize(const AppSettings& value)
             {"unload_hotkey", value.controls.unload_hotkey}, {"aim_toggle_hotkey", value.controls.aim_toggle_hotkey},
             {"esp_toggle_hotkey", value.controls.esp_toggle_hotkey}}},
         {"aim", {{"enabled", value.aim.enabled}, {"always_on", value.aim.always_on}, {"ignore_fov", value.aim.ignore_fov},
-            {"wallbang", value.aim.wallbang}, {"fov", value.aim.fov}, {"hotkey", value.aim.hotkey}}},
+            {"ignore_spawn_protected_targets", value.aim.ignore_spawn_protected_targets}, {"wallbang", value.aim.wallbang},
+            {"fov", value.aim.fov}, {"hotkey", value.aim.hotkey}}},
         {"esp", {{"enabled", esp.enabled}, {"boxes", esp.boxes}, {"box_style", box_style_name(esp.box_style)},
             {"filled_boxes", esp.filled_boxes}, {"fill_opacity", esp.fill_opacity}, {"box_thickness", esp.box_thickness},
             {"names", esp.names}, {"show_distance", esp.show_distance}, {"text_scale", esp.text_scale},
@@ -245,8 +246,8 @@ std::string ConfigManager::serialize(const AppSettings& value)
             {"aim_fov_color", color_json(esp.aim_fov_color)}, {"aim_fov_thickness", esp.aim_fov_thickness},
             {"aim_fov_opacity", esp.aim_fov_opacity}}},
         {"weapons", {{"no_spread", value.weapons.no_spread}, {"infinite_ammo", value.weapons.infinite_ammo},
-            {"instant_reload", value.weapons.instant_reload}, {"no_camera_shake", value.weapons.no_camera_shake},
-            {"rapid_fire", value.weapons.rapid_fire}, {"custom_damage", value.weapons.custom_damage}}},
+            {"instant_reload", value.weapons.instant_reload}, {"reload_time", value.weapons.reload_time},
+            {"no_camera_shake", value.weapons.no_camera_shake}, {"rapid_fire", value.weapons.rapid_fire}}},
         {"movement", {{"auto_sprint", value.movement.auto_sprint}, {"no_gravity", value.movement.no_gravity},
             {"custom_gravity", value.movement.custom_gravity}, {"high_speed", value.movement.high_speed},
             {"gravity", value.movement.gravity}, {"speed", value.movement.speed}}},
@@ -285,6 +286,7 @@ ConfigValidation ConfigManager::deserialize(const std::string& document)
         temporary.aim.enabled = aim.at("enabled").get<bool>();
         temporary.aim.always_on = aim.at("always_on").get<bool>();
         temporary.aim.ignore_fov = aim.at("ignore_fov").get<bool>();
+        temporary.aim.ignore_spawn_protected_targets = aim.value("ignore_spawn_protected_targets", false);
         temporary.aim.wallbang = aim.at("wallbang").get<bool>();
         temporary.aim.fov = feature_limits::aim_fov(aim.at("fov").get<float>());
         temporary.aim.hotkey = std::clamp(aim.at("hotkey").get<int>(), 0, 255);
@@ -333,9 +335,9 @@ ConfigValidation ConfigManager::deserialize(const std::string& document)
         temporary.weapons.no_spread = weapons.at("no_spread").get<bool>();
         temporary.weapons.infinite_ammo = weapons.at("infinite_ammo").get<bool>();
         temporary.weapons.instant_reload = weapons.at("instant_reload").get<bool>();
+        temporary.weapons.reload_time = feature_limits::reload_time(weapons.value("reload_time", 0.0f));
         temporary.weapons.no_camera_shake = weapons.at("no_camera_shake").get<bool>();
         temporary.weapons.rapid_fire = weapons.at("rapid_fire").get<bool>();
-        temporary.weapons.custom_damage = weapons.at("custom_damage").get<bool>();
 
         const json& movement = root.at("movement");
         temporary.movement.auto_sprint = movement.at("auto_sprint").get<bool>();

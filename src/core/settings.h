@@ -79,6 +79,7 @@ struct AimSettings {
     bool enabled = false;
     bool always_on = false;
     bool ignore_fov = false;
+    bool ignore_spawn_protected_targets = false;
     bool wallbang = false;
     float fov = 25.0f;
     int hotkey = 0x02;
@@ -118,9 +119,9 @@ struct WeaponSettings {
     bool no_spread = false;
     bool infinite_ammo = false;
     bool instant_reload = false;
+    float reload_time = 0.0f;
     bool no_camera_shake = false;
     bool rapid_fire = false;
-    bool custom_damage = false;
 
     bool operator==(const WeaponSettings&) const = default;
 };

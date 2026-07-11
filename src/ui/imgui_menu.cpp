@@ -145,6 +145,7 @@ void render_aim_page(AppSettings& config)
     ui::toggle("Enabled", "Master switch for target selection", aim.enabled);
     ui::toggle("Always active", "Ignore the activation hotkey", aim.always_on);
     ui::toggle("Ignore field of view", "Allow targets anywhere on screen", aim.ignore_fov);
+    ui::toggle("Ignore spawn-protected targets", "Skip players while their spawn shield is active", aim.ignore_spawn_protected_targets);
     ui::toggle("Wallbang targeting", "Allow targets behind up to two surfaces", aim.wallbang);
     ui::card_end();
     ImGui::TableNextColumn();
@@ -231,13 +232,15 @@ void render_weapons_page(WeaponSettings& weapons)
     ui::card_begin("weapons-handling", "Weapon handling", "Apply reversible changes to equipped item data.");
     ui::toggle("No spread", "Remove player and projectile spread", weapons.no_spread);
     ui::toggle("Infinite ammo", "Keep magazine and reserve ammo filled", weapons.infinite_ammo);
-    ui::toggle("Instant reload", "Reduce reload time to zero", weapons.instant_reload);
+    ui::toggle("Instant reload", "Override the weapon reload time", weapons.instant_reload);
+    ImGui::BeginDisabled(!weapons.instant_reload);
+    ui::setting_slider("Reload time", weapons.reload_time, 0.0f, 2.0f, "%.2f s");
+    ImGui::EndDisabled();
     ui::toggle("No camera shake", "Remove shot camera movement", weapons.no_camera_shake);
     ui::card_end();
     ImGui::TableNextColumn();
-    ui::card_begin("weapons-output", "Output", "Modify firing cadence and lobby damage data.");
+    ui::card_begin("weapons-output", "Output", "Modify firing cadence.");
     ui::toggle("Rapid fire", "Reduce the delay between shots", weapons.rapid_fire);
-    ui::toggle("Custom damage", "Use Hackmatch's configured damage mapping", weapons.custom_damage);
     ui::card_end();
     ImGui::EndTable();
 }

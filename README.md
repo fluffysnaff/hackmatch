@@ -17,7 +17,7 @@ Download and extract the latest release, close Redmatch 2, then run:
 install.bat
 ```
 
-> **Quick tip:** After successfully installing Hackmatch, start Redmatch 2 and press `Insert` to open or close the menu.
+> **Quick tip:** After successfully installing Hackmatch, start Redmatch 2 and press `Insert` to open or close the menu. Keyboard and mouse input is captured while the menu is open.
 
 See the [installation guide](docs/installation.md) for custom game paths, manual installation, what the script does, and solutions to common errors.
 
@@ -46,7 +46,7 @@ See the [complete menu gallery](images/README.md) for every module.
 | --- | --- |
 | 🎯 Aim | Configurable activation, FOV filtering, target selection, wall checks, and shot redirection |
 | 👁️ Visuals | Full/corner boxes, names, distance, snaplines, offscreen arrows, target markers, and inherited/custom colors |
-| 🔫 Weapons | No spread, infinite ammo, instant reload, no camera shake, rapid fire, and custom damage |
+| 🔫 Weapons | No spread, infinite ammo, configurable fast reload, no camera shake, and rapid fire |
 | 🏃 Player | Auto sprint, camera-relative speed, gravity controls, camera FOV, and spawn-protection visibility |
 | ⚙️ Config | Named profiles, copy-and-paste config sharing, configurable hotkeys, menu opacity, 36 built-in palettes, and a custom theme editor |
 
