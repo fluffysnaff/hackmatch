@@ -1,0 +1,45 @@
+name: Bug report
+description: Report a reproducible Hackmatch problem
+title: "[Bug]: "
+labels: [bug]
+body:
+  - type: input
+    id: build
+    attributes:
+      label: Redmatch 2 build ID
+      description: Find this in appmanifest_1280770.acf.
+    validations:
+      required: true
+  - type: input
+    id: commit
+    attributes:
+      label: Hackmatch commit
+    validations:
+      required: true
+  - type: textarea
+    id: reproduction
+    attributes:
+      label: Reproduction steps
+      placeholder: Describe the smallest reliable sequence that triggers the problem.
+    validations:
+      required: true
+  - type: textarea
+    id: result
+    attributes:
+      label: Expected and actual behavior
+    validations:
+      required: true
+  - type: textarea
+    id: logs
+    attributes:
+      label: Relevant console output
+      render: text
+  - type: checkboxes
+    id: checks
+    attributes:
+      label: Checks
+      options:
+        - label: I built the latest commit in Release mode.
+          required: true
+        - label: I have not attached game binaries or a complete IL2CPP dump.
+          required: true

@@ -1,0 +1,20 @@
+Hackmatch
+
+Copyright 2026 fluffysnaff
+
+This product includes software developed by fluffysnaff.
+
+Original project:
+https://github.com/fluffysnaff/hackmatch/
+
+Licensed under the GNU General Public License, Version 3.0 only.
+
+This product uses JSON for Modern C++ by Niels Lohmann.
+Copyright 2013-2022 Niels Lohmann.
+Licensed under the MIT License.
+https://github.com/nlohmann/json
+
+Theme palette selection is informed by MultiTerm Astro by Stel Clementine.
+Copyright 2025 Stel Clementine.
+Licensed under the MIT License.
+https://github.com/stelcodes/multiterm-astro

@@ -1,0 +1,42 @@
+name: Build
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  windows-release:
+    runs-on: windows-latest
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+
+      - name: Configure MSVC
+        uses: ilammy/msvc-dev-cmd@v1
+        with:
+          arch: x64
+
+      - name: Configure
+        run: cmake -S . -B build-release -G Ninja -DCMAKE_BUILD_TYPE=Release -DBUILD_TESTING=ON
+
+      - name: Build
+        run: cmake --build build-release --config Release
+
+      - name: Test
+        run: ctest --test-dir build-release -C Release --output-on-failure
+
+      - name: Test installer fixtures
+        shell: powershell
+        run: ./scripts/test_installer.ps1
+
+      - name: Upload DLL
+        uses: actions/upload-artifact@v4
+        with:
+          name: hackmatch-windows-x64
+          path: build-release/hackmatch.dll
+          if-no-files-found: error
