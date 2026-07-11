@@ -36,7 +36,7 @@ Hackmatch is an open-source, Windows-only **Redmatch2 hack** written in C++20.
 - [Hotkeys and controls](#controls)
 - [Documentation](#documentation)
 - [FAQ](#faq)
-- [Project](#project)
+- [Project Notice](#project)
 
 <a id="features"></a>
 
@@ -133,9 +133,9 @@ Profiles, themes, hotkeys, and other settings are stored in `%APPDATA%\Hackmatch
 
 <a id="project"></a>
 
-## Project
+## Project Notice
 
-Hackmatch is an independent educational project, not affiliated with Redmatch 2. Use it only where you have permission and understand the game's rules. Licensed under [GPL-3.0](LICENSE); third-party notices are in [NOTICE](NOTICE).
+**Hackmatch is an independent educational project, not affiliated with Redmatch 2. Use it only where you have permission and understand the game's rules. Licensed under [GPL-3.0](LICENSE); third-party notices are in [NOTICE](NOTICE).**
 
 ## Star History
 
