@@ -4,6 +4,7 @@
 #include <d2d1_3.h>
 #include <d3d11.h>
 #include <shlwapi.h>
+#include <wincodec.h>
 #include <wrl/client.h>
 
 #include <algorithm>
@@ -16,11 +17,54 @@ using Microsoft::WRL::ComPtr;
 
 extern "C" IMAGE_DOS_HEADER __ImageBase;
 ComPtr<ID3D11ShaderResourceView> logo_texture;
+ComPtr<ID3D11ShaderResourceView> avatar_texture;
+
+bool load_png_resource(ID3D11Device* device, int identifier, ComPtr<ID3D11ShaderResourceView>& output)
+{
+    const HMODULE module = reinterpret_cast<HMODULE>(&__ImageBase);
+    const HRSRC resource = FindResourceW(module, MAKEINTRESOURCEW(identifier), MAKEINTRESOURCEW(10));
+    const HGLOBAL loaded = resource ? LoadResource(module, resource) : nullptr;
+    BYTE* data = loaded ? static_cast<BYTE*>(LockResource(loaded)) : nullptr;
+    const DWORD data_size = resource ? SizeofResource(module, resource) : 0;
+
+    ComPtr<IWICImagingFactory> factory;
+    ComPtr<IWICStream> stream;
+    ComPtr<IWICBitmapDecoder> decoder;
+    ComPtr<IWICBitmapFrameDecode> frame;
+    ComPtr<IWICFormatConverter> converter;
+    if (!data || !data_size || FAILED(CoCreateInstance(CLSID_WICImagingFactory, nullptr, CLSCTX_INPROC_SERVER, IID_PPV_ARGS(&factory))) ||
+        FAILED(factory->CreateStream(&stream)) || FAILED(stream->InitializeFromMemory(data, data_size)) ||
+        FAILED(factory->CreateDecoderFromStream(stream.Get(), nullptr, WICDecodeMetadataCacheOnLoad, &decoder)) ||
+        FAILED(decoder->GetFrame(0, &frame)) || FAILED(factory->CreateFormatConverter(&converter)) ||
+        FAILED(converter->Initialize(frame.Get(), GUID_WICPixelFormat32bppBGRA, WICBitmapDitherTypeNone, nullptr, 0.0,
+            WICBitmapPaletteTypeCustom))) return false;
+
+    UINT width = 0;
+    UINT height = 0;
+    if (FAILED(converter->GetSize(&width, &height)) || !width || !height) return false;
+    const UINT stride = width * 4;
+    std::vector<BYTE> pixels(static_cast<size_t>(stride) * height);
+    if (FAILED(converter->CopyPixels(nullptr, stride, static_cast<UINT>(pixels.size()), pixels.data()))) return false;
+
+    D3D11_TEXTURE2D_DESC description{};
+    description.Width = width;
+    description.Height = height;
+    description.MipLevels = 1;
+    description.ArraySize = 1;
+    description.Format = DXGI_FORMAT_B8G8R8A8_UNORM;
+    description.SampleDesc.Count = 1;
+    description.Usage = D3D11_USAGE_DEFAULT;
+    description.BindFlags = D3D11_BIND_SHADER_RESOURCE;
+    const D3D11_SUBRESOURCE_DATA initial_data{pixels.data(), stride, 0};
+    ComPtr<ID3D11Texture2D> texture;
+    return SUCCEEDED(device->CreateTexture2D(&description, &initial_data, &texture)) &&
+        SUCCEEDED(device->CreateShaderResourceView(texture.Get(), nullptr, &output));
+}
 }
 
 bool init_logo(ID3D11Device* device)
 {
-    if (logo_texture || !device) return logo_texture != nullptr;
+    if ((logo_texture && avatar_texture) || !device) return logo_texture && avatar_texture;
 
     const HMODULE module = reinterpret_cast<HMODULE>(&__ImageBase);
     const HRSRC resource = FindResourceW(module, MAKEINTRESOURCEW(IDR_LOGO_SVG), MAKEINTRESOURCEW(10));
@@ -106,19 +150,31 @@ bool init_logo(ID3D11Device* device)
     texture_description.BindFlags = D3D11_BIND_SHADER_RESOURCE;
     D3D11_SUBRESOURCE_DATA initial_data{pixels.data(), row_size, 0};
     ComPtr<ID3D11Texture2D> uploaded;
-    return SUCCEEDED(device->CreateTexture2D(&texture_description, &initial_data, &uploaded)) &&
+    const bool logo_ready = SUCCEEDED(device->CreateTexture2D(&texture_description, &initial_data, &uploaded)) &&
         SUCCEEDED(device->CreateShaderResourceView(uploaded.Get(), nullptr, &logo_texture));
+    if (logo_ready && load_png_resource(device, IDR_AVATAR_PNG, avatar_texture)) return true;
+    shutdown_logo();
+    return false;
 }
 
 void shutdown_logo()
 {
     logo_texture.Reset();
+    avatar_texture.Reset();
 }
 
 void draw_logo(ImDrawList* draw, ImVec2 position, float size, ImU32 tint)
 {
     if (draw && logo_texture) {
         draw->AddImage(reinterpret_cast<ImTextureID>(logo_texture.Get()), position, {position.x + size, position.y + size}, {}, {1, 1}, tint);
+    }
+}
+
+void draw_avatar(ImDrawList* draw, ImVec2 position, float size)
+{
+    if (draw && avatar_texture) {
+        draw->AddImageRounded(reinterpret_cast<ImTextureID>(avatar_texture.Get()), position, {position.x + size, position.y + size},
+            {}, {1, 1}, IM_COL32_WHITE, size * 0.5f);
     }
 }
 }

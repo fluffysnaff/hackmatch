@@ -8,4 +8,5 @@ namespace hackmatch::ui {
 bool init_logo(ID3D11Device* device);
 void shutdown_logo();
 void draw_logo(ImDrawList* draw, ImVec2 position, float size, ImU32 tint);
+void draw_avatar(ImDrawList* draw, ImVec2 position, float size);
 }

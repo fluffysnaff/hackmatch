@@ -1,5 +1,6 @@
 cmake_minimum_required(VERSION 3.24)
-project(Hackmatch VERSION 0.1.0 LANGUAGES C CXX)
+file(STRINGS VERSION HACKMATCH_VERSION LIMIT_COUNT 1)
+project(Hackmatch VERSION ${HACKMATCH_VERSION} LANGUAGES C CXX)
 
 if(NOT WIN32)
   message(FATAL_ERROR "Hackmatch builds a Windows DLL")
@@ -102,14 +103,14 @@ add_library(hackmatch SHARED
   src/ui/widgets.h
 )
 target_compile_features(hackmatch PRIVATE cxx_std_20)
-target_compile_definitions(hackmatch PRIVATE WIN32_LEAN_AND_MEAN NOMINMAX)
+target_compile_definitions(hackmatch PRIVATE HACKMATCH_VERSION="${PROJECT_VERSION}" WIN32_LEAN_AND_MEAN NOMINMAX)
 target_include_directories(hackmatch PRIVATE
   src/core
   src/features
   src/platform
   src/ui
 )
-target_link_libraries(hackmatch PRIVATE imgui minhook nlohmann_json::nlohmann_json d2d1 d3d11 dxgi shlwapi user32)
+target_link_libraries(hackmatch PRIVATE imgui minhook nlohmann_json::nlohmann_json d2d1 d3d11 dxgi shell32 shlwapi user32 windowscodecs)
 hackmatch_enable_warnings(hackmatch)
 
 if(BUILD_TESTING)
@@ -157,6 +158,7 @@ if(HACKMATCH_BUILD_UI_PREVIEW)
   )
   target_compile_features(hackmatch_ui_preview PRIVATE cxx_std_20)
   target_compile_definitions(hackmatch_ui_preview PRIVATE
+    HACKMATCH_VERSION="${PROJECT_VERSION}"
     HACKMATCH_UI_PREVIEW
     WIN32_LEAN_AND_MEAN
     NOMINMAX

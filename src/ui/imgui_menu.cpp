@@ -5,12 +5,14 @@
 #include "esp.h"
 #include "gameplay.h"
 #endif
+#include "game_offsets.h"
 #include "settings.h"
 #include "logo.h"
 #include "theme.h"
 #include "widgets.h"
 
 #include <windows.h>
+#include <shellapi.h>
 
 #include <d3d11.h>
 #include <imgui.h>
@@ -34,14 +36,7 @@ struct HotkeyCapture {
 };
 
 HotkeyCapture hotkey_capture;
-constexpr const char* page_titles[] = {"Aim", "Visuals", "Weapons", "Player", "Config"};
-constexpr const char* page_descriptions[] = {
-    "Control how targets are acquired and when shots are redirected.",
-    "Choose the player information that stays visible during a match.",
-    "Tune weapon handling and projectile behavior without permanent changes.",
-    "Adjust movement, physics, camera, and local protection.",
-    "Manage named profiles, appearance, and portable configuration strings.",
-};
+constexpr const char* page_titles[] = {"Aimbot", "Visuals", "Weapons", "Player", "Config"};
 constexpr ui::NavigationIcon page_icons[] = {ui::NavigationIcon::Aim, ui::NavigationIcon::Visuals,
     ui::NavigationIcon::Weapons, ui::NavigationIcon::Player, ui::NavigationIcon::Config};
 constexpr float transition_duration = 0.180f;
@@ -104,13 +99,10 @@ void hotkey_setting(const char* label, int& key, std::initializer_list<int> conf
             hotkey_capture.down[static_cast<size_t>(candidate)] = (GetAsyncKeyState(candidate) & 0x8000) != 0;
         }
     }
-    const bool hovered = ImGui::IsItemHovered();
     if (allow_clear) {
         ImGui::SameLine();
         if (ImGui::Button((std::string("Clear##") + label).c_str())) key = 0;
     }
-    if (hovered) ImGui::SetTooltip("Esc cancels. Reserved and already assigned keys are ignored.");
-
     if (hotkey_capture.id != id) return;
     for (int candidate = 1; candidate <= 255; ++candidate) {
         const bool down = (GetAsyncKeyState(candidate) & 0x8000) != 0;
@@ -141,15 +133,15 @@ void render_aim_page(AppSettings& config)
     AimSettings& aim = config.aim;
     if (!ImGui::BeginTable("aim-columns", page_column_count(), ImGuiTableFlags_SizingStretchSame)) return;
     ImGui::TableNextColumn();
-    ui::card_begin("aim-main", "Aim assist", "Choose when Hackmatch redirects a shot toward the best target.");
-    ui::toggle("Enabled", "Master switch for target selection", aim.enabled);
-    ui::toggle("Always active", "Ignore the activation hotkey", aim.always_on);
-    ui::toggle("Ignore field of view", "Allow targets anywhere on screen", aim.ignore_fov);
-    ui::toggle("Ignore spawn-protected targets", "Skip players while their spawn shield is active", aim.ignore_spawn_protected_targets);
+    ui::card_begin("aim-main", "Aim assist", nullptr);
+    ui::toggle("Enabled", nullptr, aim.enabled);
+    ui::toggle("Always active", nullptr, aim.always_on);
+    ui::toggle("Ignore field of view", nullptr, aim.ignore_fov);
+    ui::toggle("Ignore spawn-protected targets", nullptr, aim.ignore_spawn_protected_targets);
     ui::toggle("Wallbang targeting", "Allow targets behind up to two surfaces", aim.wallbang);
     ui::card_end();
     ImGui::TableNextColumn();
-    ui::card_begin("aim-tuning", "Targeting", "Fine-tune activation and the allowed target cone.");
+    ui::card_begin("aim-tuning", "Targeting", nullptr);
     ImGui::BeginDisabled(aim.always_on);
     hotkey_setting("Activation key", aim.hotkey, {config.controls.menu_hotkey, config.controls.unload_hotkey,
         config.controls.aim_toggle_hotkey, config.controls.esp_toggle_hotkey});
@@ -167,16 +159,16 @@ void render_visuals_page(EspSettings& esp)
     const ui::ThemePalette& theme = ui::active_palette();
     if (!ImGui::BeginTable("visual-columns", page_column_count(), ImGuiTableFlags_SizingStretchSame)) return;
     ImGui::TableNextColumn();
-    ui::card_begin("visuals-overlay", "Overlay", "Set box structure and surface treatment.");
-    ui::toggle("Enabled", "Master switch for the overlay", esp.enabled);
-    ui::toggle("Boxes", "Draw bounds around on-screen players", esp.boxes);
+    ui::card_begin("visuals-overlay", "ESP", nullptr);
+    ui::toggle("Enabled", nullptr, esp.enabled);
+    ui::toggle("Boxes", nullptr, esp.boxes);
     if (esp.boxes) {
         int style = static_cast<int>(esp.box_style);
         const char* styles[] = {"Full", "Corner"};
         ImGui::TextUnformatted("Box style");
         ImGui::SetNextItemWidth(-1.0f);
         if (ImGui::Combo("##box-style", &style, styles, 2)) esp.box_style = static_cast<BoxStyle>(style);
-        ui::toggle("Filled boxes", "Tint the player bounds", esp.filled_boxes);
+        ui::toggle("Filled boxes", nullptr, esp.filled_boxes);
         ImGui::BeginDisabled(!esp.filled_boxes);
         ui::setting_slider("Fill opacity", esp.fill_opacity, 0.0f, 1.0f, "%.2f");
         ImGui::EndDisabled();
@@ -185,18 +177,18 @@ void render_visuals_page(EspSettings& esp)
     ui::card_end();
 
     ImGui::TableNextColumn();
-    ui::card_begin("visuals-labels", "Labels", "Choose concise context shown above each player.");
-    ui::toggle("Names", "Show player display names", esp.names);
-    ui::toggle("Distance", "Show derived world-space distance", esp.show_distance);
+    ui::card_begin("visuals-labels", "Labels", nullptr);
+    ui::toggle("Names", nullptr, esp.names);
+    ui::toggle("Distance", nullptr, esp.show_distance);
     ui::setting_slider("Text scale", esp.text_scale, 0.75f, 1.75f, "%.2fx");
     ui::card_end();
 
     ImGui::TableNextColumn();
-    ui::card_begin("visuals-guides", "Guides", "Add direction and targeting guides without new game bindings.");
-    ui::toggle("Aim field of view", "Draw the active aim cone", esp.show_aim_fov);
+    ui::card_begin("visuals-guides", "Guides", nullptr);
+    ui::toggle("Aim field of view", nullptr, esp.show_aim_fov);
     ui::setting_slider("FOV thickness", esp.aim_fov_thickness, 0.5f, 4.0f, "%.1f px");
     ui::setting_slider("FOV opacity", esp.aim_fov_opacity, 0.0f, 1.0f, "%.2f");
-    ui::toggle("Snaplines", "Connect included players to the selected origin", esp.snaplines);
+    ui::toggle("Snaplines", nullptr, esp.snaplines);
     ImGui::BeginDisabled(!esp.snaplines);
     int origin = static_cast<int>(esp.snapline_origin);
     const char* origins[] = {"Bottom", "Center", "Crosshair"};
@@ -209,14 +201,14 @@ void render_visuals_page(EspSettings& esp)
     ui::card_end();
 
     ImGui::TableNextColumn();
-    ui::card_begin("visuals-filters", "Filters", "Choose teams and cap derived world-space distance.");
-    ui::toggle("Show teammates", "Include players on the local team", esp.show_team);
-    ui::toggle("Show enemies", "Include players on opposing teams", esp.show_enemies);
+    ui::card_begin("visuals-filters", "Filters", nullptr);
+    ui::toggle("Show teammates", nullptr, esp.show_team);
+    ui::toggle("Show enemies", nullptr, esp.show_enemies);
     ui::setting_slider("Maximum distance", esp.maximum_distance, 0.0f, 5000.0f, esp.maximum_distance <= 0.0f ? "Off" : "%.0f m");
     ui::card_end();
 
     ImGui::TableNextColumn();
-    ui::card_begin("visuals-colors", "Colors", "Unchecked colors inherit the active theme.");
+    ui::card_begin("visuals-colors", "Colors", nullptr);
     ui::color_setting("Team", esp.team_color, theme.team);
     ui::color_setting("Enemy", esp.enemy_color, theme.enemy);
     ui::color_setting("Current target", esp.target_color, theme.target);
@@ -227,12 +219,19 @@ void render_visuals_page(EspSettings& esp)
 
 void render_weapons_page(WeaponSettings& weapons)
 {
+    ImVec4 caution_background = ui::active_palette().warning;
+    caution_background.w = 0.10f;
+    ImVec4 danger = ui::to_imgui(ui::active_palette().enemy);
+    ImVec4 danger_background = danger;
+    danger_background.w = 0.12f;
     if (!ImGui::BeginTable("weapon-columns", page_column_count(), ImGuiTableFlags_SizingStretchSame)) return;
     ImGui::TableNextColumn();
     ui::card_begin("weapons-handling", "Weapon handling", "Apply reversible changes to equipped item data.");
     ui::toggle("No spread", "Remove player and projectile spread", weapons.no_spread);
-    ui::toggle("Infinite ammo", "Keep magazine and reserve ammo filled", weapons.infinite_ammo);
-    ui::toggle("Instant reload", "Override the weapon reload time", weapons.instant_reload);
+    ui::toggle("Infinite ammo", "CAUTION - Detection risk", weapons.infinite_ammo,
+        &caution_background, &ui::active_palette().warning);
+    ui::toggle("Instant reload", "CAUTION - Detection risk", weapons.instant_reload,
+        &caution_background, &ui::active_palette().warning);
     ImGui::BeginDisabled(!weapons.instant_reload);
     ui::setting_slider("Reload time", weapons.reload_time, 0.0f, 2.0f, "%.2f s");
     ImGui::EndDisabled();
@@ -240,7 +239,7 @@ void render_weapons_page(WeaponSettings& weapons)
     ui::card_end();
     ImGui::TableNextColumn();
     ui::card_begin("weapons-output", "Output", "Modify firing cadence.");
-    ui::toggle("Rapid fire", "Reduce the delay between shots", weapons.rapid_fire);
+    ui::toggle("Rapid fire", "HIGH BAN RISK - May directly cause bans", weapons.rapid_fire, &danger_background, &danger);
     ui::card_end();
     ImGui::EndTable();
 }
@@ -249,25 +248,25 @@ void render_player_page(MovementSettings& movement, PlayerSettings& player)
 {
     if (!ImGui::BeginTable("player-columns", page_column_count(), ImGuiTableFlags_SizingStretchSame)) return;
     ImGui::TableNextColumn();
-    ui::card_begin("player-movement", "Movement", "Tune local movement and physics behavior.");
-    ui::toggle("Auto sprint", "Keep the sprint state active", movement.auto_sprint);
-    ui::toggle("High speed", "Apply camera-relative movement", movement.high_speed);
+    ui::card_begin("player-movement", "Movement", nullptr);
+    ui::toggle("Auto sprint", nullptr, movement.auto_sprint);
+    ui::toggle("High speed", nullptr, movement.high_speed);
     ImGui::BeginDisabled(!movement.high_speed);
     ui::setting_slider("Movement speed", movement.speed, 5.0f, 80.0f, "%.0f");
     ImGui::EndDisabled();
-    ui::toggle("No gravity", "Disable gravity and rigidbody gravity", movement.no_gravity);
-    ui::toggle("Custom gravity", "Override the world gravity value", movement.custom_gravity);
+    ui::toggle("No gravity", nullptr, movement.no_gravity);
+    ui::toggle("Custom gravity", nullptr, movement.custom_gravity);
     ImGui::BeginDisabled(!movement.custom_gravity || movement.no_gravity);
     ui::setting_slider("Gravity", movement.gravity, -50.0f, 50.0f, "%.1f");
     ImGui::EndDisabled();
     ui::card_end();
     ImGui::TableNextColumn();
-    ui::card_begin("player-local", "Local player", "Camera and protection options.");
-    ui::toggle("Custom camera FOV", "Override the active camera field of view", player.custom_fov);
+    ui::card_begin("player-local", "Local player", nullptr);
+    ui::toggle("Custom camera FOV", nullptr, player.custom_fov);
     ImGui::BeginDisabled(!player.custom_fov);
     ui::setting_slider("Camera field of view", player.camera_fov, 40.0f, 140.0f, "%.0f deg");
     ImGui::EndDisabled();
-    ui::toggle("Disable spawn protection", "Hide the local shield object", player.disable_spawn_protection);
+    ui::toggle("Disable spawn protection", nullptr, player.disable_spawn_protection);
     ui::card_end();
     ImGui::EndTable();
 }
@@ -389,7 +388,7 @@ void ImGuiMenu::render_config_page(AppSettings& config)
 {
     if (!ImGui::BeginTable("config-columns", page_column_count(), ImGuiTableFlags_SizingStretchSame)) return;
     ImGui::TableNextColumn();
-    ui::card_begin("config-theme", "Appearance", "Choose a coding palette or edit the custom five-color theme.");
+    ui::card_begin("config-theme", "Appearance", nullptr);
     ImGui::SetNextItemWidth(-1.0f);
     if (ImGui::BeginCombo("##theme", ui::palette(config.theme).name)) {
         for (const ui::ThemePalette& theme : ui::themes()) {
@@ -417,7 +416,7 @@ void ImGuiMenu::render_config_page(AppSettings& config)
     ui::card_end();
 
     ImGui::TableNextColumn();
-    ui::card_begin("config-profiles", "Profiles", "Changes stay local until Save. Switching or deleting protects unsaved work.");
+    ui::card_begin("config-profiles", "Profiles", nullptr);
     const std::vector<std::string> profiles = config_manager().profiles();
     const std::string& active = config_manager().active_profile();
     if (ImGui::BeginCombo("##profile", active.c_str())) {
@@ -464,7 +463,7 @@ void ImGuiMenu::render_config_page(AppSettings& config)
     ui::card_end();
 
     ImGui::TableNextColumn();
-    ui::card_begin("config-hotkeys", "Hotkeys", "Assign keyboard or mouse shortcuts. Toggle shortcuts only run while the menu is closed.");
+    ui::card_begin("config-hotkeys", "Hotkeys", nullptr);
     hotkey_setting("Menu", config.controls.menu_hotkey, {config.controls.unload_hotkey,
         config.controls.aim_toggle_hotkey, config.controls.esp_toggle_hotkey, config.aim.hotkey}, false);
     hotkey_setting("Unload", config.controls.unload_hotkey, {config.controls.menu_hotkey,
@@ -473,6 +472,27 @@ void ImGuiMenu::render_config_page(AppSettings& config)
         config.controls.unload_hotkey, config.controls.esp_toggle_hotkey, config.aim.hotkey});
     hotkey_setting("Toggle ESP", config.controls.esp_toggle_hotkey, {config.controls.menu_hotkey,
         config.controls.unload_hotkey, config.controls.aim_toggle_hotkey, config.aim.hotkey});
+    ui::card_end();
+
+    ImGui::TableNextColumn();
+    ImGui::Dummy({0.0f, 4.0f});
+    ui::card_begin("config-about", "About", nullptr);
+    const ImVec2 avatar_position = ImGui::GetCursorScreenPos();
+    ui::draw_avatar(ImGui::GetWindowDrawList(), avatar_position, 64.0f);
+    ImGui::Dummy({64.0f, 64.0f});
+    ImGui::SameLine();
+    ImGui::BeginGroup();
+    ImGui::PushFont(strong_font_);
+    ImGui::Text("Hackmatch %s by fluffysnaff", HACKMATCH_VERSION);
+    ImGui::PopFont();
+    ImGui::Text("Redmatch 2 build %.*s", static_cast<int>(game_offsets::supported_build.size()), game_offsets::supported_build.data());
+    constexpr const char* repository = "github.com/fluffysnaff/hackmatch";
+    ImGui::PushStyleColor(ImGuiCol_Text, ui::active_palette().accent);
+    if (ImGui::Selectable(repository, false, ImGuiSelectableFlags_None, ImGui::CalcTextSize(repository))) {
+        ShellExecuteA(nullptr, "open", "https://github.com/fluffysnaff/hackmatch", nullptr, nullptr, SW_SHOWNORMAL);
+    }
+    ImGui::PopStyleColor();
+    ImGui::EndGroup();
     ui::card_end();
     ImGui::EndTable();
 
@@ -623,14 +643,12 @@ void ImGuiMenu::render_options()
     ImGui::PopStyleColor();
     ImGui::SetCursorPos({content_x, 48.0f + content_y});
     ImGui::PushFont(title_font_); ImGui::TextUnformatted(page_titles[page_]); ImGui::PopFont();
-    ImGui::SetCursorPos({content_x, 82.0f + content_y});
-    ImGui::PushStyleColor(ImGuiCol_Text, color.muted); ImGui::TextUnformatted(page_descriptions[page_]); ImGui::PopStyleColor();
     draw = ImGui::GetWindowDrawList();
     const ImVec2 content_position = ImGui::GetWindowPos();
-    draw->AddLine({content_position.x + content_x, content_position.y + 116.0f + content_y},
-        {content_position.x + window_size.x - sidebar_width - 32.0f, content_position.y + 116.0f + content_y}, packed(color.border));
-    ImGui::SetCursorPos({content_x, 136.0f + content_y});
-    ImGui::BeginChild("page-scroll", {window_size.x - sidebar_width - content_x - 24.0f, window_size.y - 156.0f - content_y}, ImGuiChildFlags_None);
+    draw->AddLine({content_position.x + content_x, content_position.y + 92.0f + content_y},
+        {content_position.x + window_size.x - sidebar_width - 32.0f, content_position.y + 92.0f + content_y}, packed(color.border));
+    ImGui::SetCursorPos({content_x, 112.0f + content_y});
+    ImGui::BeginChild("page-scroll", {window_size.x - sidebar_width - content_x - 24.0f, window_size.y - 132.0f - content_y}, ImGuiChildFlags_None);
     switch (page_) {
     case 0: render_aim_page(config); break;
     case 1: render_visuals_page(config.esp); break;

@@ -1,3 +1,4 @@
 #include "resource.h"
 
 IDR_LOGO_SVG RCDATA "../../images/logo.svg"
+IDR_AVATAR_PNG RCDATA "../../images/avatar.png"

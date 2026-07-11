@@ -104,7 +104,7 @@ bool navigation_item(const char* label, NavigationIcon icon, float selection)
     return clicked;
 }
 
-bool toggle(const char* label, const char* description, bool& value)
+bool toggle(const char* label, const char* description, bool& value, const ImVec4* background, const ImVec4* description_color)
 {
     const ThemePalette& color = active_palette();
     ImGui::PushID(label);
@@ -127,6 +127,9 @@ bool toggle(const char* label, const char* description, bool& value)
     constexpr float track_height = 24.0f;
     const ImVec2 track_min{maximum.x - track_width, minimum.y + (row_height - track_height) * 0.5f};
     const ImVec2 track_max{maximum.x, track_min.y + track_height};
+    if (background) {
+        draw->AddRectFilled({minimum.x - 8.0f, minimum.y}, {maximum.x + 8.0f, maximum.y}, packed(*background), 5.0f);
+    }
     if (ImGui::IsItemHovered()) {
         draw->AddRectFilled({minimum.x - 8.0f, minimum.y}, {maximum.x + 8.0f, maximum.y}, packed(color.card_hover), 5.0f);
     }
@@ -135,7 +138,8 @@ bool toggle(const char* label, const char* description, bool& value)
     else draw->AddText({minimum.x, minimum.y + 5.0f}, text_color, label);
     if (description && description[0]) {
         const ImVec4 clip{minimum.x, minimum.y, track_min.x - 16.0f, maximum.y};
-        draw->AddText(nullptr, 0.0f, {minimum.x, minimum.y + 29.0f}, packed(color.muted), description, nullptr, 0.0f, &clip);
+        draw->AddText(nullptr, 0.0f, {minimum.x, minimum.y + 29.0f}, packed(description_color ? *description_color : color.muted),
+            description, nullptr, 0.0f, &clip);
     }
     ImVec4 off = color.border_strong;
     off.w = 1.0f;
@@ -208,8 +212,6 @@ void color_setting(const char* label, ColorSetting& value, const Rgba& inherited
         value.value = {channels[0], channels[1], channels[2], channels[3]};
     }
     ImGui::EndDisabled();
-    if (ImGui::IsItemHovered()) ImGui::SetTooltip("RGBA %.2f, %.2f, %.2f, %.2f%s", displayed.r, displayed.g, displayed.b, displayed.a,
-        value.custom ? "" : " (theme default)");
     ImGui::PopID();
 }
 }
