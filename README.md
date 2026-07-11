@@ -17,15 +17,15 @@ Download and extract the latest release, close Redmatch 2, then run:
 install.bat
 ```
 
-> **Quick tip:** After successfully installing Hackmatch, start Redmatch 2 and press `Insert` to open or close the menu. Keyboard and mouse input is captured while the menu is open.
+> **Quick tip:** After installing Hackmatch, start Redmatch 2 and press `Insert` to open/close the menu.
 
 See the [installation guide](docs/installation.md) for custom game paths, manual installation, what the script does, and solutions to common errors.
 
 ## Overview
 
-Hackmatch is an open-source, Windows-only **Redmatch2 hack** written in C++20. Also known as an RM2 cheat, it adds aim assistance, a player ESP overlay, weapon and movement options, configurable hotkeys, profiles, and themes through an in-game DirectX 11 ImGui interface.
+Hackmatch is an open-source, Windows-only **Redmatch2 hack** written in C++20.
 
-See the [complete menu gallery](images/README.md) for every module.
+**See the [complete menu gallery](images/README.md) for every module.**
 
 ## Contents
 
@@ -44,13 +44,13 @@ See the [complete menu gallery](images/README.md) for every module.
 
 | Module | Current options |
 | --- | --- |
-| Aim | Configurable activation, FOV filtering, target selection, wall checks, and shot redirection |
-| Visuals | Full/corner boxes, names, distance, snaplines, offscreen arrows, target markers, and inherited/custom colors |
-| Weapons | No spread, infinite ammo, configurable fast reload, no camera shake, and rapid fire |
-| Player | Auto sprint, camera-relative speed, gravity controls, camera FOV, and spawn-protection visibility |
-| Config | Named profiles, copy-and-paste config sharing, configurable hotkeys, menu opacity, 36 built-in palettes, and a custom theme editor |
+| Aim | Configurable activation, FOV filtering, target selection, wall check, ignore shielded |
+| Visuals | Full/corner boxes, names, distance, snaplines, offscreen arrows, target markers |
+| Weapons | No spread, infinite ammo, fast reload, no camera shake, and rapid fire |
+| Player | Auto sprint, custom player speed, gravity controls, camera FOV, and ignore spawn-protection |
+| Config | Named profiles, copy-and-paste config sharing, configurable hotkeys, menu opacity, 36 built-in themes + custom theme editor |
 
-Built-in coding palettes include Dracula, Catppuccin, Tokyo Night, Nord, Gruvbox, One Dark, Solarized, Monokai, GitHub Dark, Rose Pine, Kanagawa, Everforest, Synthwave '84, Night Owl, Poimandres, Vesper, Andromeeda, Aurora X, Ayu Dark, Dark Plus, Houston, Laserwave, Material, Slack Dark, and Vitesse Dark variants. Choose **Custom** in Config to edit its background, surface, accent, text, and muted colors. Use **Copy current config** and **Paste config** to share settings. Themes and settings are saved with profiles in `%APPDATA%\Hackmatch\profiles`.
+Themes and settings are saved with profiles in `%APPDATA%\Hackmatch\profiles`.
 
 <a id="technology"></a>
 
@@ -62,7 +62,7 @@ Hackmatch is a native C++20 DLL that works with Redmatch 2's IL2CPP runtime. It 
 
 ## Source Build Requirements
 
-- Windows 10 or Windows 11
+- Windows 10(*not tested*) or Windows 11
 - Redmatch 2 on Steam
 - Visual Studio 2022 C++ Build Tools
 - CMake 3.24 or newer
@@ -80,16 +80,16 @@ cd hackmatch
 scripts\build_release.bat
 ```
 
-The release DLL is written to `build-release\hackmatch.dll`. To build and install in one step, optionally providing a custom game folder:
+The release DLL is written to `build-release\hackmatch.dll`. To build and install in one step:
 
 ```bat
 build_and_install.bat
 build_and_install.bat "C:\Program Files (x86)\Steam\steamapps\common\Redmatch 2"
 ```
 
-Preview installation without changing files with `scripts\install_enforcer.bat --dry-run`. See the [installation guide](docs/installation.md) for full instructions and troubleshooting.
+See the [installation guide](docs/installation.md) for full instructions and troubleshooting.
 
-At startup, Hackmatch compares Steam's installed build ID with the build recorded in `game_offsets.h`. A mismatch is reported in the menu and console but does not prevent startup. Each launch rewrites `%APPDATA%\Hackmatch\hackmatch.log` with the current console session.
+At startup, Hackmatch compares Steam's installed build ID with the build recorded in `game_offsets.h`. A mismatch is reported in the menu and console but does not prevent startup. 
 
 <a id="controls"></a>
 
@@ -98,9 +98,7 @@ At startup, Hackmatch compares Steam's installed build ID with the build recorde
 | Key | Action |
 | --- | --- |
 | `Insert` | Toggle the menu (configurable) |
-| `End` | Restore modified state, remove hooks, and unload (configurable) |
-
-Aim and ESP can also be assigned toggle hotkeys from Config. Hotkeys accept keyboard or mouse buttons; `Esc`, Windows, menu, and sleep keys are reserved.
+| `End` | Unload, restore modified state and remove hooks (configurable) |
 
 <a id="documentation"></a>
 
@@ -119,19 +117,15 @@ Aim and ESP can also be assigned toggle hotkeys from Config. Hotkeys accept keyb
 
 ### What is Hackmatch?
 
-Hackmatch is a native Redmatch 2 hack for Windows. It provides aim, ESP, weapon, player, appearance, profile, and hotkey settings in an in-game menu.
+Hackmatch is a native Redmatch 2 hack for Windows. It provides aimbot, ESP, weapon, player, appearance, profile, and hotkey settings in an in-game ImGui menu.
 
 ### How do I install Hackmatch?
 
-Download and extract the latest release, then run `install.bat`. It finds the Redmatch 2 Steam installation and installs the packaged DLL as `Redmatch 2_Data\enforcer.dll`. Source builds can use `build_and_install.bat` instead.
+Download and extract the latest release(optionally **building from the source is recommended**), then run `install.bat`. It finds the Redmatch 2 Steam installation and installs the packaged DLL as `Redmatch 2_Data\enforcer.dll`. Source builds can use `build_and_install.bat` instead.
 
 ### Does Hackmatch support every Redmatch 2 version?
 
 IL2CPP bindings can change when Redmatch 2 updates. Hackmatch compares the installed Steam build with its supported build and displays a warning when they do not match. See [Updating game bindings](docs/updating-bindings.md) for the verification process.
-
-### Are gameplay changes permanent?
-
-Gameplay changes apply only while enabled. Hackmatch restores the original values when a feature is disabled or the DLL is unloaded.
 
 ### Where are Hackmatch profiles stored?
 
