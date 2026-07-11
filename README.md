@@ -7,9 +7,9 @@
 
 <p align="center"><img src="images/01_hackmatch_menu_aim.png" alt="Hackmatch Aim menu"></p>
 
-## 🚀 Get Started
+## Get Started
 
-### ➡️ [Download the Latest Release](https://github.com/fluffysnaff/hackmatch/releases/latest)
+### [Download the Latest Release](https://github.com/fluffysnaff/hackmatch/releases/latest)
 
 Download and extract the latest release, close Redmatch 2, then run:
 
@@ -21,13 +21,13 @@ install.bat
 
 See the [installation guide](docs/installation.md) for custom game paths, manual installation, what the script does, and solutions to common errors.
 
-## 🔎 Overview
+## Overview
 
 Hackmatch is an open-source, Windows-only **Redmatch2 hack** written in C++20. Also known as an RM2 cheat, it adds aim assistance, a player ESP overlay, weapon and movement options, configurable hotkeys, profiles, and themes through an in-game DirectX 11 ImGui interface.
 
 See the [complete menu gallery](images/README.md) for every module.
 
-## 📑 Contents
+## Contents
 
 - [Redmatch 2 mod features](#features)
 - [Technology](#technology)
@@ -40,27 +40,27 @@ See the [complete menu gallery](images/README.md) for every module.
 
 <a id="features"></a>
 
-## 🎮 Redmatch 2 Mod Features
+## Redmatch 2 Mod Features
 
 | Module | Current options |
 | --- | --- |
-| 🎯 Aim | Configurable activation, FOV filtering, target selection, wall checks, and shot redirection |
-| 👁️ Visuals | Full/corner boxes, names, distance, snaplines, offscreen arrows, target markers, and inherited/custom colors |
-| 🔫 Weapons | No spread, infinite ammo, configurable fast reload, no camera shake, and rapid fire |
-| 🏃 Player | Auto sprint, camera-relative speed, gravity controls, camera FOV, and spawn-protection visibility |
-| ⚙️ Config | Named profiles, copy-and-paste config sharing, configurable hotkeys, menu opacity, 36 built-in palettes, and a custom theme editor |
+| Aim | Configurable activation, FOV filtering, target selection, wall checks, and shot redirection |
+| Visuals | Full/corner boxes, names, distance, snaplines, offscreen arrows, target markers, and inherited/custom colors |
+| Weapons | No spread, infinite ammo, configurable fast reload, no camera shake, and rapid fire |
+| Player | Auto sprint, camera-relative speed, gravity controls, camera FOV, and spawn-protection visibility |
+| Config | Named profiles, copy-and-paste config sharing, configurable hotkeys, menu opacity, 36 built-in palettes, and a custom theme editor |
 
 Built-in coding palettes include Dracula, Catppuccin, Tokyo Night, Nord, Gruvbox, One Dark, Solarized, Monokai, GitHub Dark, Rose Pine, Kanagawa, Everforest, Synthwave '84, Night Owl, Poimandres, Vesper, Andromeeda, Aurora X, Ayu Dark, Dark Plus, Houston, Laserwave, Material, Slack Dark, and Vitesse Dark variants. Choose **Custom** in Config to edit its background, surface, accent, text, and muted colors. Use **Copy current config** and **Paste config** to share settings. Themes and settings are saved with profiles in `%APPDATA%\Hackmatch\profiles`.
 
 <a id="technology"></a>
 
-## 🧩 Technology
+## Technology
 
 Hackmatch is a native C++20 DLL that works with Redmatch 2's IL2CPP runtime. It uses MinHook for hook lifecycle, DirectX 11 for rendering, Dear ImGui for the menu, and CMake with Ninja for reproducible builds.
 
 <a id="requirements"></a>
 
-## ✅ Source Build Requirements
+## Source Build Requirements
 
 - Windows 10 or Windows 11
 - Redmatch 2 on Steam
@@ -70,7 +70,7 @@ Hackmatch is a native C++20 DLL that works with Redmatch 2's IL2CPP runtime. It 
 
 <a id="building"></a>
 
-## 🔨 Build from Source
+## Build from Source
 
 Install the requirements above, then clone and build the repository:
 
@@ -93,7 +93,7 @@ At startup, Hackmatch compares Steam's installed build ID with the build recorde
 
 <a id="controls"></a>
 
-## ⌨️ Hotkeys and Controls
+## Hotkeys and Controls
 
 | Key | Action |
 | --- | --- |
@@ -104,7 +104,7 @@ Aim and ESP can also be assigned toggle hotkeys from Config. Hotkeys accept keyb
 
 <a id="documentation"></a>
 
-## 📚 Documentation
+## Documentation
 
 - [Aim and raycasting](docs/aim-and-raycasting.md)
 - [Installation and troubleshooting](docs/installation.md)
@@ -115,7 +115,7 @@ Aim and ESP can also be assigned toggle hotkeys from Config. Hotkeys accept keyb
 
 <a id="faq"></a>
 
-## ❓ FAQ
+## FAQ
 
 ### What is Hackmatch?
 
@@ -139,7 +139,7 @@ Profiles, themes, hotkeys, and other settings are stored in `%APPDATA%\Hackmatch
 
 <a id="project"></a>
 
-## ⚖️ Project
+## Project
 
 Hackmatch is an independent educational project, not affiliated with Redmatch 2. Use it only where you have permission and understand the game's rules. Licensed under [GPL-3.0](LICENSE); third-party notices are in [NOTICE](NOTICE).
 
