@@ -22,12 +22,22 @@ namespace {
 constexpr int present_vtable_index = 8;
 constexpr int resize_buffers_vtable_index = 13;
 thread_local int local_shot_depth = 0;
+thread_local bool selecting_aim_target = false;
 
 std::atomic<unsigned long long> aim_until = 0;
 
 bool aim_cast_active()
 {
-    return local_shot_depth > 0 || GetTickCount64() < aim_until.load(std::memory_order_relaxed);
+    return !selecting_aim_target && (local_shot_depth > 0 || GetTickCount64() < aim_until.load(std::memory_order_relaxed));
+}
+
+bool redirect_shot(Vector3 origin, Vector3& direction, float& target_distance)
+{
+    if (!aim_cast_active()) return false;
+    selecting_aim_target = true;
+    const bool redirected = gameplay().redirect_shot(origin, direction, target_distance);
+    selecting_aim_target = false;
+    return redirected;
 }
 
 void handle_raw_mouse(HRAWINPUT input)
@@ -134,12 +144,10 @@ bool Hooks::raycast_hook(Vector3 origin, Vector3 direction, float max_distance, 
 
 bool Hooks::raycast(Vector3 origin, Vector3 direction, float max_distance, int layer_mask, int query_trigger_interaction, const MethodInfo* method)
 {
-    if (aim_cast_active()) {
-        Vector3 redirected = direction;
-        float target_distance = 0.0f;
-        if (gameplay().redirect_shot(origin, redirected, target_distance) && clear_shot(origin, redirected, max_distance, layer_mask, query_trigger_interaction, method)) {
-            direction = redirected;
-        }
+    Vector3 redirected = direction;
+    float target_distance = 0.0f;
+    if (redirect_shot(origin, redirected, target_distance) && target_distance <= max_distance && clear_shot(origin, redirected, max_distance, layer_mask, query_trigger_interaction, method)) {
+        direction = redirected;
     }
     return raycast_(origin, direction, max_distance, layer_mask, query_trigger_interaction, method);
 }
@@ -151,12 +159,10 @@ il2cpp::Array* Hooks::raycast_all_hook(Vector3 origin, Vector3 direction, float 
 
 il2cpp::Array* Hooks::raycast_all(Vector3 origin, Vector3 direction, float max_distance, int layer_mask, int query_trigger_interaction, const MethodInfo* method)
 {
-    if (aim_cast_active()) {
-        Vector3 redirected = direction;
-        float target_distance = 0.0f;
-        if (gameplay().redirect_shot(origin, redirected, target_distance) && clear_shot(origin, redirected, max_distance, layer_mask, query_trigger_interaction, method)) {
-            direction = redirected;
-        }
+    Vector3 redirected = direction;
+    float target_distance = 0.0f;
+    if (redirect_shot(origin, redirected, target_distance) && target_distance <= max_distance && clear_shot(origin, redirected, max_distance, layer_mask, query_trigger_interaction, method)) {
+        direction = redirected;
     }
     return raycast_all_(origin, direction, max_distance, layer_mask, query_trigger_interaction, method);
 }
@@ -168,12 +174,10 @@ int Hooks::raycast_non_alloc_hook(Vector3 origin, Vector3 direction, il2cpp::Arr
 
 int Hooks::raycast_non_alloc(Vector3 origin, Vector3 direction, il2cpp::Array* results, float max_distance, int layer_mask, int query_trigger_interaction, const MethodInfo* method)
 {
-    if (aim_cast_active()) {
-        Vector3 redirected = direction;
-        float target_distance = 0.0f;
-        if (gameplay().redirect_shot(origin, redirected, target_distance) && clear_shot(origin, redirected, max_distance, layer_mask, query_trigger_interaction, method)) {
-            direction = redirected;
-        }
+    Vector3 redirected = direction;
+    float target_distance = 0.0f;
+    if (redirect_shot(origin, redirected, target_distance) && target_distance <= max_distance && clear_shot(origin, redirected, max_distance, layer_mask, query_trigger_interaction, method)) {
+        direction = redirected;
     }
     return raycast_non_alloc_(origin, direction, results, max_distance, layer_mask, query_trigger_interaction, method);
 }

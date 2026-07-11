@@ -283,27 +283,15 @@ void choose_player_targets(AimTarget& best, const Vector3& camera_position, cons
 
 il2cpp::Object* raycast_hit_collider(RaycastHit& hit)
 {
-    static MethodInfo* get_collider = il2cpp::method("UnityEngine.PhysicsModule", "UnityEngine", "RaycastHit", "get_collider", 0);
-    using GetColliderFn = il2cpp::Object* (*)(RaycastHit, const MethodInfo*);
-    static GetColliderFn fn = il2cpp::method_pointer<GetColliderFn>(get_collider);
-    il2cpp::Object* collider = fn ? fn(hit, get_collider) : nullptr;
-    if (collider || hit.collider == 0) {
-        return collider;
+    static MethodInfo* find_object = il2cpp::method("UnityEngine.CoreModule", "UnityEngine", "Object", "FindObjectFromInstanceID", 1);
+    if (!find_object || hit.collider == 0) {
+        return nullptr;
     }
 
-    static MethodInfo* find_object = il2cpp::method("UnityEngine.CoreModule", "UnityEngine", "Object", "FindObjectFromInstanceID", 1);
     void* args[] = {&hit.collider};
     il2cpp::Object* exception = nullptr;
-    collider = find_object ? il2cpp::runtime_invoke(find_object, nullptr, args, &exception) : nullptr;
+    il2cpp::Object* collider = il2cpp::runtime_invoke(find_object, nullptr, args, &exception);
     return exception ? nullptr : collider;
-}
-
-il2cpp::Object* raycast_hit_transform(RaycastHit& hit)
-{
-    static MethodInfo* get_transform = il2cpp::method("UnityEngine.PhysicsModule", "UnityEngine", "RaycastHit", "get_transform", 0);
-    using GetTransformFn = il2cpp::Object* (*)(RaycastHit, const MethodInfo*);
-    static GetTransformFn fn = il2cpp::method_pointer<GetTransformFn>(get_transform);
-    return fn ? fn(hit, get_transform) : nullptr;
 }
 
 il2cpp::Object* component_player(il2cpp::Object* component)
@@ -329,6 +317,10 @@ il2cpp::Object* component_player(il2cpp::Object* component)
 
 il2cpp::Object* collider_player(il2cpp::Object* collider)
 {
+    if (!collider) {
+        return nullptr;
+    }
+
     il2cpp::Object* player = component_player(collider);
     if (player) {
         return player;
@@ -369,9 +361,6 @@ bool walls_before_player(const Vector3& origin, const Vector3& direction, float 
 
         il2cpp::Object* collider = raycast_hit_collider(hit);
         il2cpp::Object* player = collider_player(collider);
-        if (!player) {
-            player = component_player(raycast_hit_transform(hit));
-        }
         if (player == local) {
             continue;
         }
