@@ -11,13 +11,13 @@
 
 ### [Download the Latest Release](https://github.com/fluffysnaff/hackmatch/releases/latest)
 
-Download and extract the latest release, close Redmatch 2, then run:
+Download and extract the latest release, then run:
 
 ```bat
 install.bat
 ```
 
-> **Quick tip:** After installing Hackmatch, start Redmatch 2 and press `Insert` to open/close the menu.
+> After installing Hackmatch, start Redmatch 2 and press `Insert` to open/close the menu.
 
 See the [installation guide](docs/installation.md) for custom game paths, manual installation, what the script does, and solutions to common errors.
 
@@ -25,7 +25,7 @@ See the [installation guide](docs/installation.md) for custom game paths, manual
 
 Hackmatch is an open-source, Windows-only **Redmatch2 hack** written in C++20.
 
-**See the [complete menu gallery](images/README.md) for every module.**
+**-> See the [whole menu](images/README.md).**
 
 ## Contents
 
@@ -44,11 +44,11 @@ Hackmatch is an open-source, Windows-only **Redmatch2 hack** written in C++20.
 
 | Module | Current options |
 | --- | --- |
-| Aim | Configurable activation, FOV filtering, target selection, wall check, ignore shielded |
+| Aimbot | Configurable activation, FOV filtering, target selection, wall check, ignore shielded |
 | Visuals | Full/corner boxes, names, distance, snaplines, offscreen arrows, target markers |
 | Weapons | No spread, infinite ammo, fast reload, no camera shake, and rapid fire |
 | Player | Auto sprint, custom player speed, gravity controls, camera FOV, and ignore spawn-protection |
-| Config | Named profiles, copy-and-paste config sharing, configurable hotkeys, menu opacity, 36 built-in themes + custom theme editor |
+| Config | Named profiles, copy-and-paste config sharing, configurable hotkeys, menu opacity, 36 built-in themes, custom theme editor, and project/version details |
 
 Themes and settings are saved with profiles in `%APPDATA%\Hackmatch\profiles`.
 
