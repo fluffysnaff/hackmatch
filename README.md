@@ -44,11 +44,11 @@ Hackmatch is an open-source, Windows-only **Redmatch2 hack** written in C++20.
 
 | Module | Current options |
 | --- | --- |
-| Aimbot | Configurable activation, FOV filtering, target selection, wall check, ignore shielded |
+| Aimbot | Configurable activation, camera-aware FOV, team filtering, target points, wall check, ignore shielded |
 | Visuals | Full/corner boxes, names, distance, snaplines, offscreen arrows, target markers |
 | Weapons | No spread, infinite ammo, fast reload, no camera shake, and rapid fire |
-| Player | Auto sprint, custom player speed, gravity controls, camera FOV, and ignore spawn-protection |
-| Config | Named profiles, copy-and-paste config sharing, configurable hotkeys, menu opacity, 36 built-in themes, custom theme editor, and project/version details |
+| Player | Auto sprint, custom player speed, gravity controls, camera FOV, movement graph, and disable own spawn protection |
+| Config | Streamproof capture control, named profiles, config sharing, configurable hotkeys, menu opacity, 36 built-in themes, custom theme editor, and project/version details |
 
 Themes and settings are saved with profiles in `%APPDATA%\Hackmatch\profiles`.
 
@@ -105,6 +105,8 @@ At startup, Hackmatch compares Steam's installed build ID with the build recorde
 ## Documentation
 
 - [Aim and raycasting](docs/aim-and-raycasting.md)
+- [Capture visibility and Streamproof](docs/capture.md)
+- [Compact game reverse-engineering notes](docs/game-re/README.md)
 - [Installation and troubleshooting](docs/installation.md)
 - [Movement](docs/movement.md)
 - [Scripts](docs/scripts.md)

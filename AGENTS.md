@@ -7,7 +7,8 @@ Hackmatch is a Windows-only C++20 DLL for controlled Redmatch 2 research. It hoo
 1. Read `README.md` for supported features and user-facing commands.
 2. Read `CONTRIBUTING.md` for build, test, preview, and binding-update requirements.
 3. Read the relevant guide in `docs/` before changing movement, aim, raycasts, or raw bindings.
-4. Check `git status` before editing. The worktree may contain concurrent user changes; do not revert them.
+4. For `PlayerController` behavior or binding work, use `reverse_docs/README.md` when the ignored local research tree exists; otherwise start at `docs/game-re/README.md`. Use the linked contract rather than repeating static analysis or selecting a hook from an RVA alone.
+5. Check `git status` before editing. The worktree may contain concurrent user changes; do not revert them.
 
 ## Repository map
 
@@ -16,12 +17,15 @@ Hackmatch is a Windows-only C++20 DLL for controlled Redmatch 2 research. It hoo
 - `src/platform`: MinHook lifecycle, DirectX swap-chain hooks, rendering setup, and unload handling.
 - `src/ui`: ImGui menu, widgets, themes, SVG logo resource, and deterministic preview executable.
 - `tests`: small assert-based tests for portable logic and configuration compatibility.
-- `docs`: behavior and binding evidence that cannot be inferred safely from code alone.
+- `docs`: behavior guides plus the tracked, source-used binding evidence in `docs/game-re`.
+- `reverse_docs`: optional ignored workspace containing the full local reversing catalog; prefer it over the compact tracked fallback when present.
 - `scripts`: release build, game discovery, installation, and installer fixtures.
 
 ## Invariants
 
-- Resolve stable IL2CPP members by semantic metadata name. Put unavoidable RVAs and raw field offsets only in `src/core/game_offsets.h` and update `supported_build` with verified values.
+- Resolve stable IL2CPP members by semantic metadata name. Put unavoidable RVAs and raw field offsets only in `src/core/game_offsets.h`, document their evidence in `docs/game-re`, and update `supported_build` with verified values.
+- A function contract must explicitly permit the intended call or preserved hook; an RVA and understood behavior alone are not integration permission.
+- Treat raw IL2CPP containers, strings, boxed values, `RaycastHit`, and `MethodInfo` layouts as version-sensitive bindings.
 - Treat hook RVAs, virtual addresses, and file offsets as different values. Follow `docs/updating-bindings.md` and use matching `GameAssembly.dll` and `global-metadata.dat` files.
 - Restrict gameplay changes to `PlayerController.LocalInstance` unless a feature explicitly targets remote players.
 - Snapshot every persistent value before changing it. Restore on feature disable, player/session loss, and `Gameplay::restore()` during unload.

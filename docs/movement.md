@@ -2,15 +2,27 @@
 
 Movement features combine method hooks, runtime metadata, and reversible state patches. They operate only on `PlayerController.LocalInstance` and leave remote players untouched.
 
-## Camera-relative high-speed movement
+## Collision-preserving high-speed movement
 
-High-speed movement runs after the local player's normal `Update` method. It reads the current WASD state, obtains the active camera forward direction, removes its vertical component, and derives a horizontal right vector. The combined input vector is normalized so diagonal input is not faster than straight movement.
+High-speed movement runs after the local player's normal `Update` method. It scales the horizontal component of the game's smoothed local movement intent to the configured speed, preserving the direction, vertical component, input gates, and sprint state produced by the original frame.
 
-Configured speed is multiplied by Unity frame delta time before being added to the local transform position. That scaling keeps the requested travel rate stable across different frame rates. If input, camera state, or transform lookup is unavailable, the feature does nothing for that frame.
+The original value is restored before the next `Update`, then the override is regenerated from that frame's authentic input. The unchanged `FixedUpdate` consumes the override through its normal `Rigidbody.MovePosition` and raycast obstruction path, so the feature no longer writes the Transform directly or bypasses the controller's collision gate.
+
+## Camera FOV
+
+Custom FOV runs after the original local `Update` and uses only the camera referenced by `PlayerController.cam`; it does not fall back to `Camera.main`. Before the next frame, Hackmatch restores the game-produced value so ADS and weapon FOV calculations continue normally, then reapplies the configured override after the original frame finishes.
+
+## Diagnostics
+
+The optional Movement Graph HUD plots horizontal Rigidbody velocity and measured fixed-step speed, and labels ADS and sprint state. It reads local controller state after the original `Update`; it does not replace `Update` or `FixedUpdate`, alter raycasts, or assign names to unresolved network values.
 
 ## Auto sprint
 
 Auto sprint sets the local `PlayerController` sprint-state field immediately before and after its original `Update`. The raw field location is centralized in `game_offsets.h`; remote players and operating-system input are not modified.
+
+## Spawn protection
+
+Disable own spawn protection mirrors the documented local deactivation effects: it hides `shieldObject` and clears the paired controller state at `+0x10C`. Both values are snapshotted before the first write and restored on disable, local-player replacement, session loss, or unload. The original transition RVA is not called because it also changes global presentation state and has unresolved dependencies.
 
 ## Gravity and movement statistics
 
@@ -24,7 +36,7 @@ No-gravity mode clears the relevant effects. Custom-gravity mode applies the bou
 
 ## Restoration
 
-Before the first persistent write, Hackmatch records the original global gravity, rigidbody state, and controller statistic values it touches. Disabling the relevant option restores those values. Losing the local player also triggers restoration so state does not leak across lobby or respawn transitions.
+Before the first persistent write, Hackmatch records the original global gravity, Rigidbody gravity flag, spawn-shield state, and controller statistic values it touches. Disabling the relevant option restores those values. Losing the local player also triggers restoration so state does not leak across lobby or respawn transitions.
 
 Unload performs an explicit final restoration before render resources and the DLL are released. Item values, movement state, statistic patches, and global gravity are returned to their saved values even if the menu options were still enabled.
 

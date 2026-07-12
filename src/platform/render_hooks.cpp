@@ -2,11 +2,16 @@
 
 #include "logger.h"
 #include "menu.h"
+#include "settings.h"
 
-namespace hackmatch {
+#include <string>
+
+namespace hackmatch
+{
 void Hooks::release_render_target()
 {
-    if (render_target_) {
+    if (render_target_)
+    {
         render_target_->Release();
         render_target_ = nullptr;
     }
@@ -15,7 +20,8 @@ void Hooks::release_render_target()
 void Hooks::create_render_target(IDXGISwapChain* swap_chain)
 {
     ID3D11Texture2D* back_buffer = nullptr;
-    if (SUCCEEDED(swap_chain->GetBuffer(0, IID_PPV_ARGS(&back_buffer)))) {
+    if (SUCCEEDED(swap_chain->GetBuffer(0, IID_PPV_ARGS(&back_buffer))))
+    {
         device_->CreateRenderTargetView(back_buffer, nullptr, &render_target_);
         back_buffer->Release();
     }
@@ -23,25 +29,50 @@ void Hooks::create_render_target(IDXGISwapChain* swap_chain)
 
 void Hooks::release_device()
 {
-    if (context_) {
+    if (context_)
+    {
         context_->Release();
         context_ = nullptr;
     }
-    if (device_) {
+    if (device_)
+    {
         device_->Release();
         device_ = nullptr;
     }
 }
 
+void Hooks::update_display_affinity()
+{
+    const bool streamproof = settings().controls.streamproof;
+    if (!window_ || (display_affinity_initialized_ && streamproof == streamproof_applied_))
+        return;
+    const DWORD affinity = streamproof ? WDA_EXCLUDEFROMCAPTURE : WDA_NONE;
+    if (!SetWindowDisplayAffinity(window_, affinity))
+    {
+        if (!display_affinity_failure_logged_)
+        {
+            logger::error("Could not update streamproof mode (Windows error " + std::to_string(GetLastError()) + ")");
+            display_affinity_failure_logged_ = true;
+        }
+        return;
+    }
+    streamproof_applied_ = streamproof;
+    display_affinity_initialized_ = true;
+    display_affinity_failure_logged_ = false;
+}
+
 bool Hooks::setup_menu(IDXGISwapChain* swap_chain)
 {
-    if (menu_ready_) {
+    if (menu_ready_)
+    {
         return true;
     }
 
     DXGI_SWAP_CHAIN_DESC description{};
-    if (FAILED(swap_chain->GetDesc(&description)) || FAILED(swap_chain->GetDevice(IID_PPV_ARGS(&device_)))) {
-        if (!menu_failure_logged_) {
+    if (FAILED(swap_chain->GetDesc(&description)) || FAILED(swap_chain->GetDevice(IID_PPV_ARGS(&device_))))
+    {
+        if (!menu_failure_logged_)
+        {
             logger::error("DirectX device acquisition failed; menu initialization will retry");
             menu_failure_logged_ = true;
         }
@@ -50,8 +81,10 @@ bool Hooks::setup_menu(IDXGISwapChain* swap_chain)
 
     device_->GetImmediateContext(&context_);
     window_ = description.OutputWindow;
-    if (!menu().init(window_, device_, context_)) {
-        if (!menu_failure_logged_) {
+    if (!menu().init(window_, device_, context_))
+    {
+        if (!menu_failure_logged_)
+        {
             logger::error("Menu initialization failed; initialization will retry");
             menu_failure_logged_ = true;
         }
@@ -59,7 +92,8 @@ bool Hooks::setup_menu(IDXGISwapChain* swap_chain)
         return false;
     }
 
-    wnd_proc_ = reinterpret_cast<WNDPROC>(SetWindowLongPtrW(window_, GWLP_WNDPROC, reinterpret_cast<LONG_PTR>(wnd_proc)));
+    wnd_proc_ =
+        reinterpret_cast<WNDPROC>(SetWindowLongPtrW(window_, GWLP_WNDPROC, reinterpret_cast<LONG_PTR>(wnd_proc)));
     create_render_target(swap_chain);
     menu_ready_ = true;
     logger::success("DirectX renderer and menu are ready");
@@ -68,13 +102,19 @@ bool Hooks::setup_menu(IDXGISwapChain* swap_chain)
 
 HRESULT __stdcall Hooks::present_hook(IDXGISwapChain* swap_chain, UINT sync_interval, UINT flags)
 {
-    return hooks().present(swap_chain, sync_interval, flags);
+    Hooks& instance = hooks();
+    CallbackGuard guard(instance);
+    return instance.present(swap_chain, sync_interval, flags);
 }
 
 HRESULT Hooks::present(IDXGISwapChain* swap_chain, UINT sync_interval, UINT flags)
 {
-    if (!unload_ && setup_menu(swap_chain)) {
-        if (!render_target_) {
+    std::scoped_lock lock(render_mutex_);
+    if (!unload_.load(std::memory_order_acquire) && setup_menu(swap_chain))
+    {
+        update_display_affinity();
+        if (!render_target_)
+        {
             create_render_target(swap_chain);
         }
         context_->OMSetRenderTargets(1, &render_target_, nullptr);
@@ -83,13 +123,18 @@ HRESULT Hooks::present(IDXGISwapChain* swap_chain, UINT sync_interval, UINT flag
     return present_(swap_chain, sync_interval, flags);
 }
 
-HRESULT __stdcall Hooks::resize_buffers_hook(IDXGISwapChain* swap_chain, UINT buffer_count, UINT width, UINT height, DXGI_FORMAT format, UINT flags)
+HRESULT __stdcall Hooks::resize_buffers_hook(IDXGISwapChain* swap_chain, UINT buffer_count, UINT width, UINT height,
+                                             DXGI_FORMAT format, UINT flags)
 {
-    return hooks().resize_buffers(swap_chain, buffer_count, width, height, format, flags);
+    Hooks& instance = hooks();
+    CallbackGuard guard(instance);
+    return instance.resize_buffers(swap_chain, buffer_count, width, height, format, flags);
 }
 
-HRESULT Hooks::resize_buffers(IDXGISwapChain* swap_chain, UINT buffer_count, UINT width, UINT height, DXGI_FORMAT format, UINT flags)
+HRESULT Hooks::resize_buffers(IDXGISwapChain* swap_chain, UINT buffer_count, UINT width, UINT height,
+                              DXGI_FORMAT format, UINT flags)
 {
+    std::scoped_lock lock(render_mutex_);
     release_render_target();
     return resize_buffers_(swap_chain, buffer_count, width, height, format, flags);
 }
@@ -104,7 +149,8 @@ bool Hooks::get_swapchain_vtable(void**& table)
     window_class.lpszClassName = L"hackmatch_dummy";
     RegisterClassExW(&window_class);
 
-    HWND window = CreateWindowW(window_class.lpszClassName, L"Hackmatch", WS_OVERLAPPEDWINDOW, 0, 0, 100, 100, nullptr, nullptr, window_class.hInstance, nullptr);
+    HWND window = CreateWindowW(window_class.lpszClassName, L"Hackmatch", WS_OVERLAPPEDWINDOW, 0, 0, 100, 100, nullptr,
+                                nullptr, window_class.hInstance, nullptr);
     DXGI_SWAP_CHAIN_DESC description{};
     description.BufferCount = 1;
     description.BufferDesc.Format = DXGI_FORMAT_R8G8B8A8_UNORM;
@@ -119,25 +165,34 @@ bool Hooks::get_swapchain_vtable(void**& table)
     IDXGISwapChain* swap_chain = nullptr;
     D3D_FEATURE_LEVEL feature_level{};
     const D3D_FEATURE_LEVEL feature_levels[] = {D3D_FEATURE_LEVEL_11_0, D3D_FEATURE_LEVEL_10_0};
-    HRESULT result = D3D11CreateDeviceAndSwapChain(nullptr, D3D_DRIVER_TYPE_HARDWARE, nullptr, 0, feature_levels, 2, D3D11_SDK_VERSION, &description, &swap_chain, &device, &feature_level, &context);
-    if (FAILED(result)) {
-        result = D3D11CreateDeviceAndSwapChain(nullptr, D3D_DRIVER_TYPE_WARP, nullptr, 0, feature_levels, 2, D3D11_SDK_VERSION, &description, &swap_chain, &device, &feature_level, &context);
+    HRESULT result =
+        D3D11CreateDeviceAndSwapChain(nullptr, D3D_DRIVER_TYPE_HARDWARE, nullptr, 0, feature_levels, 2,
+                                      D3D11_SDK_VERSION, &description, &swap_chain, &device, &feature_level, &context);
+    if (FAILED(result))
+    {
+        result = D3D11CreateDeviceAndSwapChain(nullptr, D3D_DRIVER_TYPE_WARP, nullptr, 0, feature_levels, 2,
+                                               D3D11_SDK_VERSION, &description, &swap_chain, &device, &feature_level,
+                                               &context);
     }
-    if (SUCCEEDED(result)) {
+    if (SUCCEEDED(result))
+    {
         table = *reinterpret_cast<void***>(swap_chain);
     }
 
-    if (swap_chain) {
+    if (swap_chain)
+    {
         swap_chain->Release();
     }
-    if (context) {
+    if (context)
+    {
         context->Release();
     }
-    if (device) {
+    if (device)
+    {
         device->Release();
     }
     DestroyWindow(window);
     UnregisterClassW(window_class.lpszClassName, window_class.hInstance);
     return SUCCEEDED(result);
 }
-}
+} // namespace hackmatch

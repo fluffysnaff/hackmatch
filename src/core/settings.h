@@ -3,8 +3,10 @@
 #include <optional>
 #include <string_view>
 
-namespace hackmatch {
-enum class ThemeId {
+namespace hackmatch
+{
+enum class ThemeId
+{
     LogoRed,
     TacticalBlue,
     Emerald,
@@ -48,18 +50,29 @@ enum class ThemeId {
 std::string_view theme_key(ThemeId theme);
 std::optional<ThemeId> theme_from_key(std::string_view key);
 
-enum class BoxStyle {
+enum class BoxStyle
+{
     Full,
     Corner,
 };
 
-enum class SnaplineOrigin {
+enum class SnaplineOrigin
+{
     Bottom,
     Center,
     Crosshair,
 };
 
-struct Rgba {
+enum class AimTargetPoint
+{
+    Automatic,
+    Head,
+    Torso,
+    Base,
+};
+
+struct Rgba
+{
     float r = 1.0f;
     float g = 1.0f;
     float b = 1.0f;
@@ -68,26 +81,31 @@ struct Rgba {
     bool operator==(const Rgba&) const = default;
 };
 
-struct ColorSetting {
+struct ColorSetting
+{
     bool custom = false;
     Rgba value{};
 
     bool operator==(const ColorSetting&) const = default;
 };
 
-struct AimSettings {
+struct AimSettings
+{
     bool enabled = false;
     bool always_on = false;
     bool ignore_fov = false;
     bool ignore_spawn_protected_targets = false;
+    bool target_teammates = false;
     bool wallbang = false;
     float fov = 25.0f;
     int hotkey = 0x02;
+    AimTargetPoint target_point = AimTargetPoint::Automatic;
 
     bool operator==(const AimSettings&) const = default;
 };
 
-struct EspSettings {
+struct EspSettings
+{
     bool enabled = false;
     bool boxes = true;
     BoxStyle box_style = BoxStyle::Full;
@@ -115,7 +133,8 @@ struct EspSettings {
     bool operator==(const EspSettings&) const = default;
 };
 
-struct WeaponSettings {
+struct WeaponSettings
+{
     bool no_spread = false;
     bool infinite_ammo = false;
     bool instant_reload = false;
@@ -126,7 +145,8 @@ struct WeaponSettings {
     bool operator==(const WeaponSettings&) const = default;
 };
 
-struct MovementSettings {
+struct MovementSettings
+{
     bool auto_sprint = false;
     bool no_gravity = false;
     bool custom_gravity = false;
@@ -137,15 +157,18 @@ struct MovementSettings {
     bool operator==(const MovementSettings&) const = default;
 };
 
-struct PlayerSettings {
+struct PlayerSettings
+{
     bool custom_fov = false;
     bool disable_spawn_protection = false;
+    bool movement_diagnostics = false;
     float camera_fov = 90.0f;
 
     bool operator==(const PlayerSettings&) const = default;
 };
 
-struct CustomThemeSettings {
+struct CustomThemeSettings
+{
     Rgba background{0.075f, 0.086f, 0.118f, 1.0f};
     Rgba surface{0.137f, 0.153f, 0.204f, 1.0f};
     Rgba accent{0.741f, 0.576f, 0.976f, 1.0f};
@@ -155,7 +178,9 @@ struct CustomThemeSettings {
     bool operator==(const CustomThemeSettings&) const = default;
 };
 
-struct InterfaceSettings {
+struct InterfaceSettings
+{
+    bool streamproof = false;
     float menu_opacity = 94.0f;
     int menu_hotkey = 0x2D;
     int unload_hotkey = 0x23;
@@ -165,7 +190,8 @@ struct InterfaceSettings {
     bool operator==(const InterfaceSettings&) const = default;
 };
 
-struct AppSettings {
+struct AppSettings
+{
     ThemeId theme = ThemeId::LogoRed;
     CustomThemeSettings custom_theme;
     InterfaceSettings controls;
@@ -180,4 +206,4 @@ struct AppSettings {
 
 AppSettings& settings();
 bool is_bindable_hotkey(int key);
-}
+} // namespace hackmatch

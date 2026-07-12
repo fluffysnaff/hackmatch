@@ -2,6 +2,7 @@ build*/
 .vs/
 out/
 dump/
+reverse_docs/
 
 *.user
 *.suo

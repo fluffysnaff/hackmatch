@@ -7,6 +7,7 @@ Hackmatch includes a few Windows scripts for building, finding the game, install
 | `install.bat` | Installs the DLL included in a downloaded release package. |
 | `build_and_install.bat` | Builds Hackmatch, then installs it into Redmatch 2. |
 | `scripts\build_release.bat` | Configures and builds the release DLL. |
+| `scripts\package_release.ps1` | Creates and validates the Windows release archive. |
 | `scripts\install_enforcer.bat` | Finds Redmatch 2 and installs the built DLL. |
 | `scripts\find_redmatch.ps1` | Locates and validates the Redmatch 2 folder. |
 | `scripts\test_installer.ps1` | Tests game discovery and installation in a temporary fixture. |
@@ -32,6 +33,14 @@ This script:
 3. Builds the project into `build-release`.
 
 The resulting DLL is `build-release\hackmatch.dll`.
+
+## Package release
+
+```powershell
+powershell -NoProfile -ExecutionPolicy Bypass -File scripts\package_release.ps1
+```
+
+After a successful release build, this creates `out\hackmatch-win64.zip` with the DLL, installer, supporting scripts, license, notices, and README. The script verifies the archive manifest before returning success.
 
 ## Install
 

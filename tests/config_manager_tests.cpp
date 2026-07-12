@@ -9,14 +9,15 @@
 #include <fstream>
 #include <nlohmann/json.hpp>
 
-namespace {
+namespace
+{
 std::filesystem::path unique_test_directory()
 {
     const auto stamp = std::chrono::steady_clock::now().time_since_epoch().count();
     return std::filesystem::temp_directory_path() / (L"hackmatch-config-tests-" + std::to_wstring(stamp));
 }
 
-}
+} // namespace
 
 int main()
 {
@@ -27,12 +28,15 @@ int main()
     AppSettings source;
     source.theme = ThemeId::CatppuccinMocha;
     source.custom_theme.accent = {0.1f, 0.8f, 0.6f, 1.0f};
+    source.controls.streamproof = true;
     source.controls.menu_opacity = 72.0f;
     source.controls.aim_toggle_hotkey = 0x75;
     source.controls.esp_toggle_hotkey = 0x76;
     source.aim.enabled = true;
     source.aim.always_on = true;
     source.aim.ignore_spawn_protected_targets = true;
+    source.aim.target_teammates = true;
+    source.aim.target_point = AimTargetPoint::Head;
     source.aim.fov = 73.0f;
     source.esp.enabled = true;
     source.esp.box_style = BoxStyle::Corner;
@@ -53,13 +57,20 @@ int main()
     source.movement.high_speed = true;
     source.movement.speed = 44.0f;
     source.player.custom_fov = true;
+    source.player.movement_diagnostics = true;
     source.player.camera_fov = 110.0f;
 
     const std::string json = ConfigManager::serialize(source);
     const ConfigValidation roundtrip = ConfigManager::deserialize(json);
     assert(roundtrip.ok);
     assert(roundtrip.value == source);
-    for (int index = 0; index < static_cast<int>(ThemeId::Count); ++index) {
+    nlohmann::json previous_interface = nlohmann::json::parse(json);
+    previous_interface["interface"].erase("streamproof");
+    const ConfigValidation previous_interface_result = ConfigManager::deserialize(previous_interface.dump());
+    assert(previous_interface_result.ok);
+    assert(!previous_interface_result.value.controls.streamproof);
+    for (int index = 0; index < static_cast<int>(ThemeId::Count); ++index)
+    {
         const ThemeId theme = static_cast<ThemeId>(index);
         assert(theme_from_key(theme_key(theme)) == theme);
     }
@@ -67,7 +78,10 @@ int main()
     legacy_json.erase("custom_theme");
     legacy_json.erase("interface");
     legacy_json["aim"].erase("ignore_spawn_protected_targets");
+    legacy_json["aim"].erase("target_teammates");
+    legacy_json["aim"].erase("target_point");
     legacy_json["weapons"].erase("reload_time");
+    legacy_json["player"].erase("movement_diagnostics");
     legacy_json["weapons"]["custom_damage"] = true;
     legacy_json["esp"]["show_ping"] = true;
     legacy_json["player"]["spoof_ping"] = true;
@@ -77,7 +91,10 @@ int main()
     assert(legacy.value.custom_theme == CustomThemeSettings{});
     assert(legacy.value.controls == InterfaceSettings{});
     assert(!legacy.value.aim.ignore_spawn_protected_targets);
+    assert(legacy.value.aim.target_teammates);
+    assert(legacy.value.aim.target_point == AimTargetPoint::Automatic);
     assert(legacy.value.weapons.reload_time == 0.0f);
+    assert(!legacy.value.player.movement_diagnostics);
 
     ConfigManager manager(directory);
     AppSettings live;
@@ -116,6 +133,9 @@ int main()
     nlohmann::json invalid_style = nlohmann::json::parse(json);
     invalid_style["esp"]["box_style"] = "diagonal";
     assert(!ConfigManager::deserialize(invalid_style.dump()).ok);
+    nlohmann::json invalid_target_point = nlohmann::json::parse(json);
+    invalid_target_point["aim"]["target_point"] = "elbow";
+    assert(!ConfigManager::deserialize(invalid_target_point.dump()).ok);
     nlohmann::json invalid_color = nlohmann::json::parse(json);
     invalid_color["esp"]["enemy_color"]["rgba"][0] = 2.0f;
     assert(!ConfigManager::deserialize(invalid_color.dump()).ok);

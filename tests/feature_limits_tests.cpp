@@ -1,6 +1,10 @@
 #include "feature_limits.h"
 
+#ifdef NDEBUG
+#undef NDEBUG
+#endif
 #include <cassert>
+#include <cmath>
 
 int main()
 {
@@ -16,6 +20,19 @@ int main()
     assert(gravity(75.0f) == 50.0f);
     assert(speed(1.0f) == 5.0f);
     assert(speed(120.0f) == 80.0f);
+    float movement_x = 3.0f;
+    float movement_z = 4.0f;
+    assert(scale_horizontal_movement(movement_x, movement_z, 20.0f));
+    assert(std::abs(movement_x - 12.0f) < 0.001f);
+    assert(std::abs(movement_z - 16.0f) < 0.001f);
+    movement_x = 0.0f;
+    movement_z = 0.0f;
+    assert(!scale_horizontal_movement(movement_x, movement_z, 20.0f));
+    const float normal_radius = aim_fov_radius(1080.0f, 25.0f, 90.0f);
+    assert(normal_radius > 0.0f);
+    assert(aim_fov_radius(1080.0f, 25.0f, 60.0f) > normal_radius);
+    assert(aim_fov_radius(1080.0f, 25.0f, 120.0f) < normal_radius);
+    assert(aim_fov_radius(0.0f, 25.0f, 90.0f) == 0.0f);
     assert(reload_time(-1.0f) == 0.0f);
     assert(reload_time(3.0f) == 2.0f);
     assert(unit(-1.0f) == 0.0f);

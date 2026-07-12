@@ -12,8 +12,8 @@ Record a durable identifier for the exact game release you inspected. The identi
 
 Review every category even if the affected feature appears to work:
 
-- Both local-player shot methods, including their shot-info parameter type.
-- The single-hit, all-hits, and non-allocating Unity raycast overloads, including complete signatures.
+- The verified local-player primary-shot method, including its shot-info parameter type and preserved-hook contract.
+- The single-hit and all-hits Unity raycast overloads, including complete signatures and `RaycastHit` layout. Confirm the non-allocating overload remains unused.
 - Player identity, display-name, and team relationships used by the overlay.
 - The player statistics container and sprint-state fields used by movement.
 - Stable classes, lifecycle methods, item data, camera, shield, and local-instance fields resolved through metadata names.
@@ -43,7 +43,7 @@ Check the labels emitted by the tool and confirm the module base calculation. Fo
 1. Build Release with warnings treated as errors and run CTest plus the installer fixtures.
 2. Inject with every feature disabled and confirm metadata resolution, DirectX readiness, menu toggling, resize handling, and clean unload.
 3. Exercise each named metadata path before testing raw-layout features.
-4. Validate both shot methods and all three raycast variants with and without FOV and surface filtering.
+4. Validate primary-shot scoping, direct single-hit validation, and hooked all-hits raycasts with and without FOV and surface filtering. Confirm non-allocating raycasts remain untouched.
 5. Test item restoration, movement transitions, gravity restoration, respawn/lobby changes, and ESP identity and team data.
 6. Confirm the lifecycle log names the exact failing binding or hook when a deliberately invalid value is tested.
 
