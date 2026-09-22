@@ -100,3 +100,7 @@ finally {
         Remove-Item -LiteralPath $sandbox -Recurse -Force
     }
 }
+
+# The locked-file fixture deliberately leaves the last native command nonzero.
+# GitHub Actions propagates LASTEXITCODE after a successful PowerShell script.
+exit 0
