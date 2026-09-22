@@ -8,15 +8,15 @@ namespace hackmatch::game_offsets
 {
 // Redmatch 2 Steam build used to generate the current metadata reference. Update this value together
 // with every RVA and raw layout offset below.
-inline constexpr std::string_view supported_build = "23904900";
+inline constexpr std::string_view supported_build = "24496548";
 
 namespace methods
 {
-inline constexpr std::uintptr_t fire_primary_shot = 0x1814A80;
-inline constexpr std::uintptr_t compute_weapon_spread = 0x1804CD0;
-inline constexpr std::uintptr_t update_crosshair_spread = 0x1808B30;
-inline constexpr std::uintptr_t physics_raycast = 0x17D9740;
-inline constexpr std::uintptr_t physics_raycast_all = 0x17D84F0;
+inline constexpr std::uintptr_t fire_primary_shot = 0x110D0B0;
+inline constexpr std::uintptr_t compute_weapon_spread = 0x11059B0;
+inline constexpr std::uintptr_t update_crosshair_spread = 0x1107A70;
+inline constexpr std::uintptr_t physics_raycast = 0x10959A0;
+inline constexpr std::uintptr_t physics_raycast_all = 0x1094750;
 } // namespace methods
 
 namespace fields

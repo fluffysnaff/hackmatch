@@ -516,14 +516,14 @@ float delta_time()
 
 il2cpp::Object* player_rigidbody(il2cpp::Object* local)
 {
-    static il2cpp::Class* rigidbody_class = il2cpp::klass("UnityEngine.CoreModule", "UnityEngine", "Rigidbody");
+    static il2cpp::Class* rigidbody_class = il2cpp::klass("UnityEngine.PhysicsModule", "UnityEngine", "Rigidbody");
     return component(local, rigidbody_class);
 }
 
 MethodInfo* set_use_gravity_method()
 {
     static MethodInfo* method =
-        il2cpp::method("UnityEngine.CoreModule", "UnityEngine", "Rigidbody", "set_useGravity", 1);
+        il2cpp::method("UnityEngine.PhysicsModule", "UnityEngine", "Rigidbody", "set_useGravity", 1);
     return method;
 }
 
@@ -542,7 +542,7 @@ void set_rigidbody_bool(il2cpp::Object* rigidbody, MethodInfo* method, bool valu
 void set_rigidbody_velocity(il2cpp::Object* rigidbody, const Vector3& velocity)
 {
     static MethodInfo* set_velocity =
-        il2cpp::method("UnityEngine.CoreModule", "UnityEngine", "Rigidbody", "set_velocity", 1);
+        il2cpp::method("UnityEngine.PhysicsModule", "UnityEngine", "Rigidbody", "set_velocity", 1);
     if (!rigidbody || !set_velocity)
     {
         return;
@@ -557,7 +557,7 @@ void set_rigidbody_velocity(il2cpp::Object* rigidbody, const Vector3& velocity)
 bool rigidbody_velocity(il2cpp::Object* rigidbody, Vector3& velocity)
 {
     static MethodInfo* get_velocity =
-        il2cpp::method("UnityEngine.CoreModule", "UnityEngine", "Rigidbody", "get_velocity", 0);
+        il2cpp::method("UnityEngine.PhysicsModule", "UnityEngine", "Rigidbody", "get_velocity", 0);
     if (!rigidbody || !get_velocity)
     {
         return false;
@@ -907,7 +907,7 @@ void apply_movement_features(const MovementSettings& movement, il2cpp::Object* l
     if (!rigidbody_gravity_patched())
     {
         static MethodInfo* get_use_gravity =
-            il2cpp::method("UnityEngine.CoreModule", "UnityEngine", "Rigidbody", "get_useGravity", 0);
+            il2cpp::method("UnityEngine.PhysicsModule", "UnityEngine", "Rigidbody", "get_useGravity", 0);
         if (get_use_gravity)
         {
             il2cpp::Object* exception = nullptr;

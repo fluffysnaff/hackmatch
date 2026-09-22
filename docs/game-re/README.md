@@ -1,8 +1,8 @@
 # Game reverse-engineering notes
 
-This directory is the compact, tracked evidence set for raw Redmatch 2 bindings used by Hackmatch. It covers Steam build `23904900`, Windows x64, `GameAssembly.dll` image base `0x180000000`.
+This directory is the compact, tracked evidence set for raw Redmatch 2 bindings used by Hackmatch. It covers Steam build `24496548`, Windows x64, `GameAssembly.dll` image base `0x180000000`. The [September 2026 update record](2026-09-22-binding-update.md) documents the migration from build `23904900` and the validation limits.
 
-The full generated research workspace is intentionally ignored. When a local `reverse_docs/README.md` exists, use its more complete contracts and raw output first. Otherwise use this directory in this order:
+The full generated research workspace is intentionally ignored. When a local `reverse_docs/README.md` exists, use its more complete contracts and raw output first, then apply the current update record: the July 2026 catalog describes the previous build's addresses. Otherwise use this directory in this order:
 
 1. [`bindings.md`](bindings.md) for every production RVA and raw field offset.
 2. [`contracts.md`](contracts.md) for integration constraints and confidence.

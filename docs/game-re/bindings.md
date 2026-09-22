@@ -1,16 +1,16 @@
 # Production binding inventory
 
-Supported game build: `23904900`. Current values live in [`game_offsets.h`](../../src/core/game_offsets.h).
+Supported game build: `24496548`. Current values live in [`game_offsets.h`](../../src/core/game_offsets.h). See the [migration evidence](2026-09-22-binding-update.md) for old/new addresses, exact signatures, and static versus runtime verification.
 
 ## Native methods
 
-| RVA | Recovered function | Production use | Evidence | Mode |
-| ---: | --- | --- | --- | --- |
-| `0x1814A80` | `PlayerController.FirePrimaryShot(PlayerController*, ShotInfo*, MethodInfo*)` | Scope eligible local primary-shot raycasts while preserving the original call | Primary-fire contract and decompile | `HOOK_PRESERVE` |
-| `0x1804CD0` | `PlayerController.ComputeWeaponSpread(PlayerController*, MethodInfo*)` | Recompute spread after restoring item values | Exact arithmetic and callers | `CALL` |
-| `0x1808B30` | `PlayerController.UpdateCrosshairSpreadLayout(PlayerController*, MethodInfo*)` | Refresh non-ADS crosshair presentation | Four transform-array writes | `CALL` |
-| `0x17D9740` | Unity `Physics.Raycast(Vector3, Vector3, float, int, int, MethodInfo*)` | Validate a redirected shot through the saved original | Unity binding and runtime signature; no PlayerController body | `CALL` |
-| `0x17D84F0` | Unity `Physics.RaycastAll(Vector3, Vector3, float, int, int, MethodInfo*)` | Redirect direction only inside a local primary shot | Call site in primary-fire body and runtime signature | `HOOK_PRESERVE` |
+| Constant in `game_offsets::methods` | Recovered function | Production use | Evidence | Mode |
+| --- | --- | --- | --- | --- |
+| `fire_primary_shot` | `PlayerController.FirePrimaryShot(PlayerController*, ShotInfo*, MethodInfo*)` | Scope eligible local primary-shot raycasts while preserving the original call | Matching metadata identity/ABI and native call chain | `HOOK_PRESERVE` |
+| `compute_weapon_spread` | `PlayerController.ComputeWeaponSpread(PlayerController*, MethodInfo*)` | Recompute spread after restoring item values | Matching metadata identity/ABI and exact native arithmetic | `CALL` |
+| `update_crosshair_spread` | `PlayerController.UpdateCrosshairSpreadLayout(PlayerController*, MethodInfo*)` | Refresh non-ADS crosshair presentation | Matching metadata identity/ABI and four transform-array writes | `CALL` |
+| `physics_raycast` | Unity `Physics.Raycast(Vector3, Vector3, float, int, int, MethodInfo*)` | Validate a redirected shot through the saved original | Exact generated overload signature | `CALL` |
+| `physics_raycast_all` | Unity `Physics.RaycastAll(Vector3, Vector3, float, int, int, MethodInfo*)` | Redirect direction only inside a local primary shot | Exact generated overload and its forwarding caller | `HOOK_PRESERVE` |
 | metadata | `PlayerController.Update(PlayerController*, MethodInfo*)` | Local per-frame feature integration | Resolved by metadata name; lifecycle contract | `HOOK_PRESERVE` |
 
 The Unity raycast RVAs and exact `RaycastHit` layout require runtime validation after every game update; the PlayerController decompile proves their role but not Unity ABI stability.

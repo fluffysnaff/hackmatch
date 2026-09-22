@@ -1,5 +1,7 @@
 # Source-used contracts
 
+The contracts below retain the established integration modes and preconditions. Historical RVAs in this page and the July 2026 local research catalog belong to build `23904900`; use `game_offsets.h` and the [current migration record](2026-09-22-binding-update.md) for current identities. Static revalidation does not replace the listed runtime checks.
+
 ## Player lifecycle and ownership
 
 `PlayerController.Start` (`0x1802B30`) establishes the owner/remote split and assigns `PlayerController.LocalInstance` only on the owner path. Features must re-read that static field, tolerate replacement or loss, and never infer authority from an RVA alone.

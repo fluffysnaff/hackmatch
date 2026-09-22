@@ -91,6 +91,8 @@ See the [installation guide](docs/installation.md) for full instructions and tro
 
 At startup, Hackmatch compares Steam's installed build ID with the build recorded in `game_offsets.h`. A mismatch is reported in the menu and console but does not prevent startup. 
 
+The current bindings target Steam public build **24496548**. See the [binding update record](docs/game-re/2026-09-22-binding-update.md) for verification details and remaining runtime checks.
+
 <a id="controls"></a>
 
 ## Hotkeys and Controls
